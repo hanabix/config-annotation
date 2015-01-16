@@ -1,18 +1,17 @@
 package com.wacai.config.annotation
 
 import com.typesafe.config.ConfigFactory
-import com.wacai.config.CrossVersionDefs._
 
 import annotation.tailrec
 import concurrent.duration.Duration
 
 object Macro {
 
-  def impl(c: CrossVersionContext)(annottees: c.Expr[Any]*): c.Expr[Any] = {
+  def impl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
     import c.universe._
 
     implicit val tn2s = (_: TermName).toString
-    implicit val ident2t = (tpt: Ident) => c.typecheck(q"var x: $tpt = _; x").tpe
+    implicit val ident2t = (tpt: Ident) => c.typeCheck(q"var x: $tpt = _; x").tpe
 
     val ref = {
       val tpe = typeOf[Configurable]
@@ -39,7 +38,7 @@ object Macro {
         ValDef(mod, name, tpt, getConfig(name, tpt))
 
       case ValDef(mod, name, tpt, expr) :: Nil =>
-        val tpe = c.typecheck(expr).tpe match {
+        val tpe = c.typeCheck(expr).tpe match {
           case ConstantType(v) => v.tpe
           case t               => t
         }
