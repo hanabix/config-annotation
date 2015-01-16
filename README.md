@@ -1,3 +1,7 @@
+## Config annotation
+
+[![Build Status](https://travis-ci.org/wacai/config-annotation.png?branch=master)](https://travis-ci.org/wacai/config-annotation)
+
 Using scala [macro annotation][mcr] to help loading [config][conf].
 
 ## Example
