@@ -46,6 +46,10 @@ lazy val root = (project in file("."))
     },
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
     libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _),
+    libraryDependencies ++= quasiquotes,
     libraryDependencies += "com.typesafe" % "config" % "1.2.1",
     libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test"
   )
+
+def quasiquotes: Seq[ModuleID] =
+  if (scalaVersion.value.startsWith("2.10")) List("org.scalamacros" %% "quasiquotes" % "2.0.1") else Nil
