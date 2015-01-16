@@ -8,11 +8,11 @@ lazy val releaseSettings = Seq(
   },
   publishMavenStyle := true,
   publishArtifact in Test := false,
-  pomIncludeRepository := { (repo: MavenRepository) => false },
+  pomIncludeRepository := { (repo: MavenRepository) => false},
   pomExtra := pomXml)
 
 lazy val pomXml =
-  (<url>https://github.com/wacai/config-annotation</url>
+  <url>https://github.com/wacai/config-annotation</url>
     <licenses>
       <license>
         <name>Apache License 2.0</name>
@@ -23,7 +23,7 @@ lazy val pomXml =
     <scm>
       <url>git@github.com:wacai/config-annotation.git</url>
       <connection>scm:git:git@github.com:wacai/config-annotation.git</connection>
-    </scm>)
+    </scm>
 
 
 lazy val root = (project in file("."))
@@ -46,11 +46,6 @@ lazy val root = (project in file("."))
     },
     addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
     libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _),
-    libraryDependencies += "com.typesafe" % "config" % "1.2.1" withSources(),
-    libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test" withSources()
+    libraryDependencies += "com.typesafe" % "config" % "1.2.1",
+    libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test"
   )
-
-
-
-val scalatest = "org.scalatest" % "scalatest_2.11" % "2.2.1"
-    
