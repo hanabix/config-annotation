@@ -30,6 +30,14 @@ val port = config.getInt("server.port")
 
 ## Installation
 
+Set up your `project/build.properties` to:
+
+```
+sbt.version = 0.13.5
+```
+
+> sbt 0.13.6+ has NPE problem while compiling
+
 Set up your `build.sbt` with:
 
 ```
