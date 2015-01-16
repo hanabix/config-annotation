@@ -10,6 +10,14 @@ class Server {
 }
 ```
 
+```
+// application.conf
+
+server {
+  port = 8080
+}
+```
+
 `@conf` will let scala compile to transform `val port = 0` to :
 
 ```
