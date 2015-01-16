@@ -27,6 +27,7 @@ lazy val pomXml =
 
 
 lazy val root = (project in file("."))
+  .settings(releaseSettings: _*)
   .settings(
     name := "config-annotation",
     organization := "com.wacai",
