@@ -1,3 +1,30 @@
+lazy val releaseSettings = Seq(
+  publishTo := {
+    val nexus = "https://oss.sonatype.org/"
+    if (version.value.trim.endsWith("SNAPSHOT"))
+      Some("snapshots" at nexus + "content/repositories/snapshots")
+    else
+      Some("releases" at nexus + "service/local/staging/deploy/maven2")
+  },
+  publishMavenStyle := true,
+  publishArtifact in Test := false,
+  pomIncludeRepository := { (repo: MavenRepository) => false },
+  pomExtra := pomXml)
+
+lazy val pomXml =
+  (<url>https://github.com/wacai/config-annotation</url>
+    <licenses>
+      <license>
+        <name>Apache License 2.0</name>
+        <url>http://www.apache.org/licenses/</url>
+        <distribution>repo</distribution>
+      </license>
+    </licenses>
+    <scm>
+      <url>git@github.com:wacai/config-annotation.git</url>
+      <connection>scm:git:git@github.com:wacai/config-annotation.git</connection>
+    </scm>)
+
 
 lazy val root = (project in file("."))
   .settings(
@@ -12,7 +39,6 @@ lazy val root = (project in file("."))
       "-unchecked",
       "-deprecation",
       "-language:_",
-//      "-Ymacro-debug-verbose",
       "-Xlog-reflective-calls"
     ),
     unmanagedSourceDirectories in Compile <+= (sourceDirectory in Compile, scalaBinaryVersion) {
