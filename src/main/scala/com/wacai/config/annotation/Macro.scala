@@ -55,9 +55,10 @@ object Macro {
   def path(c: Class[_], n: String): String = {
     @tailrec
     def uncapitalized(o: List[Char], d: Char = '.', n: List[Char] = Nil): String = (o, n) match {
-      case (Nil, l)      => l.reverse mkString ""
-      case (h :: t, Nil) => uncapitalized(t, d, (if (h.isUpper) h.toLower else h) :: n)
-      case (h :: t, _)   => uncapitalized(t, d, if (h.isUpper) h.toLower :: d :: n else h :: n)
+      case (Nil, l)                          => l.reverse mkString ""
+      case (h :: t, _) if !h.isLetterOrDigit => uncapitalized(t, d, n)
+      case (h :: t, Nil)                     => uncapitalized(t, d, (if (h.isUpper) h.toLower else h) :: n)
+      case (h :: t, _)                       => uncapitalized(t, d, if (h.isUpper) h.toLower :: d :: n else h :: n)
     }
 
     s"${uncapitalized(c.getSimpleName.toList, '_')}.${uncapitalized(n.toList)}"
