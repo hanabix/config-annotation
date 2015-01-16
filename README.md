@@ -41,11 +41,11 @@ sbt.version = 0.13.5
 Set up your `build.sbt` with:
 
 ```
-resolvers += Resolver.sonatypeRepo("releases")
-
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
 
-libraryDependencies += "com.wacai" %% "config-annotation" % "0.1"
+resolvers += Resolver.sonatypeRepo("snapshot")
+
+libraryDependencies += "com.wacai" %% "config-annotation" % "0.1-SNAPSHOT"
 
 ```
 
