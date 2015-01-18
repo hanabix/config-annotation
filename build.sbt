@@ -32,9 +32,9 @@ lazy val publishSettings = Seq(
   publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := { (repo: MavenRepository) => false},
-  pomExtra := pomXml)
+  pomExtra := pomXml) ++ xerial.sbt.Sonatype.sonatypeSettings
 
-lazy val pomXml =
+lazy val pomXml = {
   <url>https://github.com/wacai/config-annotation</url>
     <licenses>
       <license>
@@ -47,3 +47,11 @@ lazy val pomXml =
       <url>git@github.com:wacai/config-annotation.git</url>
       <connection>scm:git:git@github.com:wacai/config-annotation.git</connection>
     </scm>
+    <developers>
+      <developer>
+        <id>zhongl</id>
+        <name>zhongl</name>
+        <url>http://github.com/zhongl</url>
+      </developer>
+    </developers>
+}
