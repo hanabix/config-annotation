@@ -15,13 +15,13 @@ object Macro {
       case _                 => c.abort(c.enclosingPosition, "Invalid definition")
     }
 
-    def get(t: Type, ref: Tree, path: String): Tree = t match {
-      case _ if t <:< typeOf[Boolean]  => q"$ref.getBoolean($path)"
-      case _ if t <:< typeOf[Int]      => q"$ref.getInt($path)"
-      case _ if t <:< typeOf[Long]     => q"$ref.getBytes($path)"
-      case _ if t <:< typeOf[String]   => q"$ref.getString($path)"
-      case _ if t <:< typeOf[Double]   => q"$ref.getDouble($path)"
-      case _ if t <:< typeOf[Duration] => q"scala.concurrent.duration.Duration($ref.getDuration($path, SECONDS), SECONDS)"
+    def get(t: Type, conf: Tree, path: String): Tree = t match {
+      case _ if t <:< typeOf[Boolean]  => q"$conf.getBoolean($path)"
+      case _ if t <:< typeOf[Int]      => q"$conf.getInt($path)"
+      case _ if t <:< typeOf[Long]     => q"$conf.getBytes($path)"
+      case _ if t <:< typeOf[String]   => q"$conf.getString($path)"
+      case _ if t <:< typeOf[Double]   => q"$conf.getDouble($path)"
+      case _ if t <:< typeOf[Duration] => q"scala.concurrent.duration.Duration($conf.getDuration($path, SECONDS), SECONDS)"
       case _                           => c.abort(c.enclosingPosition, s"Unsupported type: $t")
     }
 
