@@ -33,14 +33,10 @@ lazy val crossVersionSettings = Seq(
   }
 )
 
-lazy val releaseSettings = {
-  import sbtrelease.ReleasePlugin
-  import sbtrelease.ReleasePlugin.ReleaseKeys._
+lazy val releaseSettings = sbtrelease.ReleasePlugin.releaseSettings ++ Seq(
+  sbtrelease.ReleasePlugin.ReleaseKeys.publishArtifactsAction := PgpKeys.publishSigned.value
+)
 
-  ReleasePlugin.releaseSettings ++ Seq(
-    publishArtifactsAction := PgpKeys.publishSigned.value
-  )
-}
 
 lazy val publishSettings = Seq(
   publishTo := {
