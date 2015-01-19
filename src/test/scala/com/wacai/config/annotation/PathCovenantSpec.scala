@@ -10,7 +10,7 @@ class PathCovenantSpec extends FlatSpec with Matchers {
   }
 
   "Path of class name" should "ignore neither letter or digit " in {
-    Macro.path("Macro", "i") shouldBe "macro.i"
+    Macro.path("Macro$", "i") shouldBe "macro.i"
   }
 
   "Path of field name" should "uncapitalized with dot" in {
