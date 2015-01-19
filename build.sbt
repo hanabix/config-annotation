@@ -4,7 +4,7 @@ lazy val root = (project in file("."))
   .settings(dependencySettings: _*)
   .settings(crossVersionSettings: _*)
   .settings(publishSettings: _*)
-  .settings(sbtrelease.ReleasePlugin.releaseSettings: _*)
+  .settings(releaseSettings: _*)
   .settings(addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full))
 
 
@@ -32,6 +32,15 @@ lazy val crossVersionSettings = Seq(
     if (scalaVersion.value.startsWith("2.10")) List("org.scalamacros" %% "quasiquotes" % "2.0.1") else Nil
   }
 )
+
+lazy val releaseSettings = {
+  import sbtrelease.ReleasePlugin
+  import sbtrelease.ReleasePlugin.ReleaseKeys._
+
+  ReleasePlugin.releaseSettings ++ Seq(
+    publishArtifactsAction := PgpKeys.publishSigned.value
+  )
+}
 
 lazy val publishSettings = Seq(
   publishTo := {
