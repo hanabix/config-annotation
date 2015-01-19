@@ -3,7 +3,7 @@ lazy val root = (project in file("."))
   .settings(basicSettings: _*)
   .settings(dependencySettings: _*)
   .settings(publishSettings: _*)
-  .settings(sbtrelease.ReleasePlugin.releaseSettings: _*)
+  .settings(releaseSettings: _*)
   .settings(addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full))
 
 
