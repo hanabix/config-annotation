@@ -57,6 +57,8 @@ class KafkaConsumer extends Actor with KafkaBroker {
 }
 ```
 
+> Caution: IDE would report error for uninitialized val, because macro has not be supported yet.
+
 ## Installation
 
 > Caution: only support scala 2.11.0+
@@ -75,7 +77,6 @@ Set up your `build.sbt` with:
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
 
 libraryDependencies += "com.wacai" %% "config-annotation" % "0.2.0"
-
 ```
 
 ## Path covenant
