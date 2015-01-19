@@ -52,7 +52,7 @@ object Macro {
         ClassDef(mods, name, params, Template(parents ++ List(q"$confType"), self, modify(body, parents)))
 
       case _ =>
-        c.abort(c.enclosingPosition, "Annotation is only supported on field")
+        c.abort(c.enclosingPosition, "Annotation is only supported on class or module class")
     }
 
     c.Expr[Any](result)
