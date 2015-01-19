@@ -1,17 +1,20 @@
 package com.wacai.config.annotation
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.ConfigFactory
 
 import annotation.tailrec
 import concurrent.duration.Duration
+import reflect.macros.whitebox
 
 object Macro {
 
-  def impl(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
+  def impl(c: whitebox.Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
     import c.universe._
 
-    lazy val confType = c.prefix.tree match {
-      case q"new $_[$tpt]()" => c.typeCheck(q"0.asInstanceOf[$tpt]").tpe
+    def tpe(tpt: Tree) = c.typecheck(q"0.asInstanceOf[$tpt]").tpe
+
+    lazy val confType: Type = c.prefix.tree match {
+      case q"new $_[$tpt]()" => tpe(tpt)
       case _                 => c.abort(c.enclosingPosition, "Invalid definition")
     }
 
@@ -25,23 +28,19 @@ object Macro {
       case _                           => c.abort(c.enclosingPosition, s"Unsupported type: $t")
     }
 
-    def confs(ref: Tree) = confType.members collect {
+    def valDefs(conf: Tree) = confType.members collect {
       case ms: MethodSymbol if ms.isAbstract && ms.paramLists.isEmpty => ms
     } map { m =>
       val owner = m.owner.name.toString.toList
       val name = m.name.toString.toList
-      q"val ${m.name}:${m.returnType} = ${get(m.returnType, ref, path(owner, name))}"
+      q"val ${m.name}:${m.returnType} = ${get(m.returnType, conf, path(owner, name))}"
     } toList
 
-
-    def configurable(t: Tree) = c.typeCheck(q"0.asInstanceOf[$t]").tpe <:< typeOf[Configurable]
-
     def modify(body: List[Tree], parents: List[Tree]): List[Tree] = {
-
-      if (parents.exists(configurable)) {
-        q"val _config = config" :: confs(q"this._config") ::: body
+      if (parents.exists(t => tpe(t) <:< typeOf[Configurable])) {
+        q"val _config = config" :: valDefs(q"this._config") ::: body
       } else {
-        confs(reify(config) tree) ::: body
+        valDefs(reify(config) tree) ::: body
       }
     }
 

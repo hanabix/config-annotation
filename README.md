@@ -59,6 +59,8 @@ class KafkaConsumer extends Actor with Kafka {
 
 ## Installation
 
+> Caution: only support scala 2.11.0+
+
 Set up your `project/build.properties` to:
 
 ```
@@ -74,7 +76,7 @@ addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.fu
 
 resolvers += Resolver.sonatypeRepo("snapshots")
 
-libraryDependencies += "com.wacai" %% "config-annotation" % "0.1-SNAPSHOT"
+libraryDependencies += "com.wacai" %% "config-annotation" % "0.2.0-SNAPSHOT"
 
 ```
 
