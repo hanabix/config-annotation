@@ -49,7 +49,6 @@ object Macro {
         ModuleDef(mods, name, Template(parents ++ List(q"$confType"), self, modify(body, parents)))
 
       case ClassDef(mods, name, params, Template(parents, self, body)) :: _ =>
-        parents foreach println
         ClassDef(mods, name, params, Template(parents ++ List(q"$confType"), self, modify(body, parents)))
 
       case _ =>
