@@ -6,10 +6,10 @@ Using scala [macro annotation][mcr] to help loading [config][conf].
 
 ## Example
 
-`Kafka.scala`:
+`KafkaBroker.scala`:
 
 ```
-trait Kafka extends Configurable {
+trait KafkaBroker {
   val host: String
   val port: Int
   val soTimeout: Duration
@@ -23,7 +23,7 @@ trait Kafka extends Configurable {
 ```
 import com.wacai.config.annotation._
 
-@conf[Kafka] class KafkaConsumer extends Actor {
+@conf[KafkaBroker] class KafkaConsumer extends Actor {
   val client = new SimpleConsumer(host, port, soTimeout, bufferSize, clientId)
 
   def receive = ???
@@ -34,7 +34,7 @@ import com.wacai.config.annotation._
 
 ```
 
-kafka {
+kafka_broker {
   host = wacai.com
   port = 12306
   so.timeout = 5s
@@ -46,7 +46,7 @@ kafka {
 `@conf` will let scala compile to insert codes to `KafkaConsumer`:
 
 ```
-class KafkaConsumer extends Actor with Kafka {
+class KafkaConsumer extends Actor with KafkaBroker {
   val host = config.getString("kafka.host")
   val port = config.getInt("kafka.port")
   val soTimeout = Duration(config.getDuration("kafka.so.timeout", SECONDS))
@@ -74,9 +74,7 @@ Set up your `build.sbt` with:
 ```
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
 
-resolvers += Resolver.sonatypeRepo("snapshots")
-
-libraryDependencies += "com.wacai" %% "config-annotation" % "0.2.0-SNAPSHOT"
+libraryDependencies += "com.wacai" %% "config-annotation" % "0.2.0"
 
 ```
 
@@ -84,9 +82,7 @@ libraryDependencies += "com.wacai" %% "config-annotation" % "0.2.0-SNAPSHOT"
 
 |Scala definition | Config path |
 |-----------------|-------------|
-|Server.port      | server.port  |
-|HttpServer.port  | http_server.port|
-|Server.maxBufferSize| server.max.buffer.size|
+|KafkaBroker.bufferSize | kafka_broker.buffer.size|
 
 ## Type covenant
 
@@ -105,10 +101,8 @@ libraryDependencies += "com.wacai" %% "config-annotation" % "0.2.0-SNAPSHOT"
 ```
 import com.wacai.config.annotation._
 
-class MyActor extends Actor with Configurable {
+@conf[Settings] class MyActor extends Actor with Configurable {
   val config = context.system.settings.config
-
-  @conf val threshold = 0
 
   def receive = ???
 
@@ -119,6 +113,9 @@ class MyActor extends Actor with Configurable {
 
 Please see test cases.
 
+## Early release
+
+[v0.1.2](https://github.com/wacai/config-annotation/tree/v0.1.2)
 
 [mcr]:http://docs.scala-lang.org/overviews/macros/annotations.html
 [conf]:https://github.com/typesafehub/config
