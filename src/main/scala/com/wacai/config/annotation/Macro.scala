@@ -34,15 +34,21 @@ object Macro {
 
 
     c.Expr[Any](annottees.map(_.tree).toList match {
-      case ValDef(mod, name, tpt: Ident, _) :: Nil =>
-        ValDef(mod, name, tpt, getConfig(name, tpt))
+      case ValDef(mods, name, tpt: Ident, _) :: Nil =>
+        import Flag._
+        val m = if(mods.hasFlag(DEFERRED)) {
+          val f = mods.flags.asInstanceOf[Long] & (~DEFERRED.asInstanceOf[Long]) | DEFAULTINIT.asInstanceOf[Long]
+          Modifiers(f.asInstanceOf[FlagSet], mods.privateWithin,mods.annotations)
+        } else mods
 
-      case ValDef(mod, name, tpt, expr) :: Nil =>
-        val tpe = c.typeCheck(expr).tpe match {
+        ValDef(m, name, tpt, getConfig(name, tpt))
+
+      case ValDef(mods, name, tpt, value) :: Nil =>
+        val tpe = c.typeCheck(value).tpe match {
           case ConstantType(v) => v.tpe
           case t               => t
         }
-        ValDef(mod, name, tpt, getConfig(name, tpe))
+        ValDef(mods, name, tpt, getConfig(name, tpe))
 
       case _ =>
         c.abort(c.enclosingPosition, "Annotation is only supported on field")

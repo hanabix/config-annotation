@@ -24,5 +24,5 @@ class Var {
 class CustomizedConfig extends Configurable {
   lazy val config = ConfigFactory.parseString("customized_config.s = abc")
 
-  @conf val s = ""
+  @conf val s: String
 }
