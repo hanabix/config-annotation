@@ -10,7 +10,7 @@ Using scala [macro annotation][mcr] to help loading [config][conf].
 import com.wacai.config.annotation._
 
 class Server {
-  @conf val port = 0
+  @conf val port: Int
 }
 ```
 
@@ -22,11 +22,13 @@ server {
 }
 ```
 
-`@conf` will let scala compile to transform `val port = 0` to :
+`@conf` will let scala compile to transform `val port: Int` to :
 
 ```
 val port = config.getInt("server.port")
 ```
+
+> Caution: IDE would report error for uninitialized val, because macro has not be supported yet.
 
 ## Installation
 
@@ -43,9 +45,7 @@ Set up your `build.sbt` with:
 ```
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
 
-resolvers += Resolver.sonatypeRepo("snapshots")
-
-libraryDependencies += "com.wacai" %% "config-annotation" % "0.1-SNAPSHOT"
+libraryDependencies += "com.wacai" %% "config-annotation" % "0.1.2"
 
 ```
 
