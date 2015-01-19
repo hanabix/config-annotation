@@ -1,12 +1,9 @@
-
 lazy val root = (project in file("."))
   .settings(basicSettings: _*)
   .settings(dependencySettings: _*)
   .settings(publishSettings: _*)
   .settings(releaseSettings: _*)
   .settings(addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full))
-
-
 
 lazy val basicSettings = Seq(
   name := "config-annotation",
@@ -55,3 +52,7 @@ lazy val pomXml = {
       </developer>
     </developers>
 }
+
+lazy val releaseSettings = sbtrelease.ReleasePlugin.releaseSettings ++ Seq(
+  sbtrelease.ReleasePlugin.ReleaseKeys.publishArtifactsAction := PgpKeys.publishSigned.value
+)
