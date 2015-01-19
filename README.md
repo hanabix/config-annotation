@@ -6,26 +6,55 @@ Using scala [macro annotation][mcr] to help loading [config][conf].
 
 ## Example
 
+`Kafka.scala`:
+
+```
+trait Kafka extends Configurable {
+  val host: String
+  val port: Int
+  val soTimeout: Duration
+  val bufferSize: Long
+  val clientId: String
+}
+```
+
+`KafkaConsumer.scala`:
+
 ```
 import com.wacai.config.annotation._
 
-class Server {
-  @conf val port = 0
+@conf[Kafka] class KafkaConsumer extends Actor {
+  val client = new SimpleConsumer(host, port, soTimeout, bufferSize, clientId)
+
+  def receive = ???
 }
 ```
 
-```
-// application.conf
+`application.conf`:
 
-server {
-  port = 8080
+```
+
+kafka {
+  host = wacai.com
+  port = 12306
+  so.timeout = 5s
+  buffers.size = 64k
+  client.id = wacai
 }
 ```
 
-`@conf` will let scala compile to transform `val port = 0` to :
+`@conf` will let scala compile to insert codes to `KafkaConsumer`:
 
 ```
-val port = config.getInt("server.port")
+class KafkaConsumer extends Actor with Kafka {
+  val host = config.getString("kafka.host")
+  val port = config.getInt("kafka.port")
+  val soTimeout = Duration(config.getDuration("kafka.so.timeout", SECONDS))
+  val bufferSize = config.getBytes("kafka.buffer.size")
+  val clientId = config.getString("kafka.client.id")
+
+  ...
+}
 ```
 
 ## Installation
