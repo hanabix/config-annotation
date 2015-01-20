@@ -77,7 +77,7 @@ Set up your `build.sbt` with:
 ```
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
 
-libraryDependencies += "com.wacai" %% "config-annotation" % "0.2.0"
+libraryDependencies += "com.wacai" %% "config-annotation" % "0.2.1"
 ```
 
 ## Path covenant
