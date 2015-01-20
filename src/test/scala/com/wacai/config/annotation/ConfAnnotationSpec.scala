@@ -8,7 +8,6 @@ import scala.concurrent.duration.Duration
 class ConfAnnotationSpec extends FlatSpec with Matchers {
   "@conf annotated class" should "get value" in {
     import scala.concurrent.duration._
-    @conf[ConfDef1] class C
 
     val c = new C
     c.i shouldBe 10
@@ -19,16 +18,26 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
     c.t shouldBe 5.seconds
   }
 
-  "@conf annotated customized config" should "get value from parsed config" in {
-
-    @conf[ConfDef2] object O extends Configurable {
-      def config = ConfigFactory.parseString("conf_def2.i = 10")
-    }
-
+  "@conf annotated module" should "get value from parsed config" in {
     O.i shouldBe 10
+  }
+
+  "@conf annotated trait" should "get value from parsed config" in {
+    new T {}.proxy shouldBe 10
   }
 }
 
+@conf[ConfDef1] class C
+
+@conf[ConfDef2] object O extends Configurable {
+  def config = ConfigFactory.parseString("conf_def2.i = 10")
+}
+
+@conf[ConfDef2] trait T extends Configurable {
+  def config = ConfigFactory.parseString("conf_def2.i = 10")
+
+  def proxy = i
+}
 
 trait ConfDef1 {
   val i: Int
