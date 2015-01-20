@@ -20,7 +20,7 @@ object Macro {
 
     lazy val seconds = reify(SECONDS) tree
 
-    def duration(t: Tree) = q"Duration($t, $seconds)"
+    def duration(t: Tree) = q"scala.concurrent.duration.Duration($t, $seconds)"
 
     def get(t: Type, conf: Tree, path: String): Tree = t match {
       case _ if t <:< typeOf[Boolean]  => q"$conf.getBoolean($path)"
@@ -28,7 +28,7 @@ object Macro {
       case _ if t <:< typeOf[Long]     => q"$conf.getBytes($path)"
       case _ if t <:< typeOf[String]   => q"$conf.getString($path)"
       case _ if t <:< typeOf[Double]   => q"$conf.getDouble($path)"
-      case _ if t <:< typeOf[Duration] => q"Duration($conf.getDuration($path, $seconds),$seconds)"
+      case _ if t <:< typeOf[Duration] => duration(q"$conf.getDuration($path, $seconds)")
       case _                           => c.abort(c.enclosingPosition, s"Unsupported type: $t")
     }
 

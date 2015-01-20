@@ -3,10 +3,8 @@ package com.wacai.config.annotation
 import com.typesafe.config.ConfigFactory
 import org.scalatest._
 
-import scala.concurrent.duration.Duration
-
 class ConfAnnotationSpec extends FlatSpec with Matchers {
-  "@conf annotated class" should "get value" in  {
+  "@conf annotated class" should "get value" in {
     import scala.concurrent.duration._
 
     val c = new C
@@ -48,6 +46,9 @@ object CO
 @conf[ConfDef1] class CO
 
 trait ConfDef1 {
+
+  import scala.concurrent.duration.Duration
+
   val i: Int
   val l: Long
   val s: String
