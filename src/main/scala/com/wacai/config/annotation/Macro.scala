@@ -3,7 +3,7 @@ package com.wacai.config.annotation
 import com.typesafe.config.ConfigFactory
 
 import annotation.tailrec
-import concurrent.duration.Duration
+import concurrent.duration._
 import reflect.macros.whitebox
 
 object Macro {
@@ -18,13 +18,17 @@ object Macro {
       case _                 => c.abort(c.enclosingPosition, "Invalid definition")
     }
 
+    lazy val seconds = reify(SECONDS) tree
+
+    def duration(t: Tree) = q"Duration($t, $seconds)"
+
     def get(t: Type, conf: Tree, path: String): Tree = t match {
       case _ if t <:< typeOf[Boolean]  => q"$conf.getBoolean($path)"
       case _ if t <:< typeOf[Int]      => q"$conf.getInt($path)"
       case _ if t <:< typeOf[Long]     => q"$conf.getBytes($path)"
       case _ if t <:< typeOf[String]   => q"$conf.getString($path)"
       case _ if t <:< typeOf[Double]   => q"$conf.getDouble($path)"
-      case _ if t <:< typeOf[Duration] => q"scala.concurrent.duration.Duration($conf.getDuration($path, SECONDS), SECONDS)"
+      case _ if t <:< typeOf[Duration] => q"Duration($conf.getDuration($path, $seconds),$seconds)"
       case _                           => c.abort(c.enclosingPosition, s"Unsupported type: $t")
     }
 

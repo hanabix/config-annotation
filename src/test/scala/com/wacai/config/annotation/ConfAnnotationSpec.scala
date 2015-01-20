@@ -1,12 +1,13 @@
 package com.wacai.config.annotation
 
-import com.typesafe.config.{ConfigFactory, Config}
+import com.typesafe.config.ConfigFactory
 import org.scalatest._
-import scala.concurrent.duration._
+
+import scala.concurrent.duration.Duration
 
 class ConfAnnotationSpec extends FlatSpec with Matchers {
   "@conf annotated class" should "get value" in {
-
+    import scala.concurrent.duration._
     @conf[ConfDef1] class C
 
     val c = new C
