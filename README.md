@@ -1,6 +1,7 @@
 ## Config annotation
 
 [![Build Status](https://travis-ci.org/wacai/config-annotation.png?branch=master)](https://travis-ci.org/wacai/config-annotation)
+[![Codacy Badge](https://www.codacy.com/project/badge/b9158949586c439cb05e21333f52798b)](https://www.codacy.com/public/zhonglunfu/config-annotation)
 
 Using scala [macro annotation][mcr] to help loading [config][conf].
 
