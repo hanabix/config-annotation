@@ -52,8 +52,12 @@ object Macro {
       case ModuleDef(mods, name, Template(parents, self, body)) :: Nil =>
         ModuleDef(mods, name, Template(parents ++ List(q"$confType"), self, modify(body, parents)))
 
-      case ClassDef(mods, name, params, Template(parents, self, body)) :: _ =>
+      case ClassDef(mods, name, params, Template(parents, self, body)) :: Nil =>
         ClassDef(mods, name, params, Template(parents ++ List(q"$confType"), self, modify(body, parents)))
+
+      case ClassDef(mods, name, params, Template(parents, self, body)) :: obj :: Nil =>
+        val cls = ClassDef(mods, name, params, Template(parents ++ List(q"$confType"), self, modify(body, parents)))
+        q"..${cls :: obj :: Nil}"
 
       case _ =>
         c.abort(c.enclosingPosition, "Annotation is only supported on class or module class")

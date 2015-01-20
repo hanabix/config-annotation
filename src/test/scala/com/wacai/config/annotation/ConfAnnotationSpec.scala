@@ -6,7 +6,7 @@ import org.scalatest._
 import scala.concurrent.duration.Duration
 
 class ConfAnnotationSpec extends FlatSpec with Matchers {
-  "@conf annotated class" should "get value" in {
+  "@conf annotated class" should "get value" in  {
     import scala.concurrent.duration._
 
     val c = new C
@@ -25,6 +25,10 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
   "@conf annotated trait" should "get value from parsed config" in {
     new T {}.proxy shouldBe 10
   }
+
+  "@conf annotated class with companion" should "get value" in {
+    new CO {}.i shouldBe 10
+  }
 }
 
 @conf[ConfDef1] class C
@@ -38,6 +42,10 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
 
   def proxy = i
 }
+
+object CO
+
+@conf[ConfDef1] class CO
 
 trait ConfDef1 {
   val i: Int
