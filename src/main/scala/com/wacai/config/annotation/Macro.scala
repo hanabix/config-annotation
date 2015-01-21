@@ -13,8 +13,8 @@ object Macro {
 
     def tpe(tpt: Tree) = c.typecheck(q"0.asInstanceOf[$tpt]").tpe
 
-    lazy val confType: Type = c.prefix.tree match {
-      case q"new $_[$tpt]()" => tpe(tpt)
+    lazy val confType: Tree = c.prefix.tree match {
+      case q"new $_[$tpt]()" => tpt
       case _                 => c.abort(c.enclosingPosition, "Invalid definition")
     }
 
@@ -32,7 +32,7 @@ object Macro {
       case _                           => c.abort(c.enclosingPosition, s"Unsupported type: $t")
     }
 
-    def valDefs(conf: Tree) = confType.members collect {
+    def valDefs(conf: Tree) = tpe(confType).members collect {
       case ms: MethodSymbol if ms.isAbstract && ms.paramLists.isEmpty => ms
     } map { m =>
       val owner = m.owner.name.toString.toList
@@ -50,13 +50,13 @@ object Macro {
 
     val result = annottees.map(_.tree).toList match {
       case ModuleDef(mods, name, Template(parents, self, body)) :: Nil =>
-        ModuleDef(mods, name, Template(parents ++ List(q"$confType"), self, modify(body, parents)))
+        ModuleDef(mods, name, Template(parents +? q"$confType", self, modify(body, parents)))
 
       case ClassDef(mods, name, params, Template(parents, self, body)) :: Nil =>
-        ClassDef(mods, name, params, Template(parents ++ List(q"$confType"), self, modify(body, parents)))
+        ClassDef(mods, name, params, Template(parents +? q"$confType", self, modify(body, parents)))
 
       case ClassDef(mods, name, params, Template(parents, self, body)) :: obj :: Nil =>
-        val cls = ClassDef(mods, name, params, Template(parents ++ List(q"$confType"), self, modify(body, parents)))
+        val cls = ClassDef(mods, name, params, Template(parents +? q"$confType", self, modify(body, parents)))
         q"..${cls :: obj :: Nil}"
 
       case _ =>
@@ -79,6 +79,13 @@ object Macro {
   }
 
   lazy val config = ConfigFactory.load()
+
+  implicit class AppendIfAbsent[E](list: List[E]) {
+    def +?(e: E): List[E] = {
+      // TODO improve ugly equals by toString
+      if (list.exists{i => i.toString == e.toString}) list else list ::: List(e)
+    }
+  }
 
 }
 

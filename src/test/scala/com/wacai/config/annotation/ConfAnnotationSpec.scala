@@ -29,7 +29,7 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
   }
 }
 
-@conf[ConfDef1] class C
+@conf[ConfDef1] class C extends ConfDef1
 
 @conf[ConfDef2] object O extends Configurable {
   def config = ConfigFactory.parseString("conf_def2.i = 10")
