@@ -9,7 +9,12 @@ lazy val basicSettings = Seq(
   name := "config-annotation",
   organization := "com.wacai",
   scalaVersion := "2.11.5",
-  scalacOptions ++= Seq("-encoding", "utf8", "-feature", "-unchecked", "-deprecation", "-language:_")
+  scalacOptions += "-encoding",
+  scalacOptions += "utf8",
+  scalacOptions += "-feature",
+  scalacOptions += "-unchecked",
+  scalacOptions += "-deprecation",
+  scalacOptions += "-language:_"
 )
 
 lazy val dependencySettings = Seq(
