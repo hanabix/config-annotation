@@ -14,6 +14,7 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
     conf.socket.timeout shouldBe 3.seconds
     conf.socket.buffer shouldBe 1024 * 1024L
     conf.client shouldBe "wacai"
+    conf.debug shouldBe true
   }
 
 }
@@ -32,6 +33,8 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
 
   val client = "id"
 
+  val debug = false
+
   def config = ConfigFactory.parseString(
     """
       |kafka {
@@ -46,6 +49,8 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
       |  }
       |
       |  client: wacai
+      |
+      |  debug:yes
       |}
     """.stripMargin)
 }
