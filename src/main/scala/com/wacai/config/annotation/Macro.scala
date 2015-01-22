@@ -33,13 +33,13 @@ class Macro(val c: whitebox.Context) {
         implicit val out = new PrintWriter(new File(outputDir, s"$name.conf"))
 
         def newBody(implicit conf: Tree): List[Tree] = body.map {
-          case Initialized(vd @ ValDef(_, _, _, rhs)) if !is[Config](tpe(rhs)) => generate(vd, s"$name", 1)
-          case t                                                               => t
+          case Initialized(vd @ ValDef(_, _, _, rhs)) => generate(vd, s"$name", 1)
+          case t                                      => t
         }
 
         try {
           node(0)(s"$name") {
-            val nb = if (body exists configRefDef) {
+            val nb = if (parent exists configurable) {
               q"private val _config = config" :: newBody(q"_config")
             } else {
               newBody(reify(CONFIG).tree)
@@ -67,10 +67,7 @@ class Macro(val c: whitebox.Context) {
 
   def duration(t: Tree) = q"scala.concurrent.duration.Duration($t, $seconds)"
 
-  def configRefDef(t: Tree): Boolean = t match {
-    case DefDef(mods, TermName("config"), _, _, _, rhs) => is[Config](tpe(rhs))
-    case _                                              => false
-  }
+  def configurable(t: Tree): Boolean = is[Configurable](tpe(q"0.asInstanceOf[$t]"))
 
   def generate(cd: ClassDef, owner: String, level: Int)(implicit conf: Tree, out: PrintWriter): ClassDef = cd match {
     case ClassDef(m, name, a, Template(p, s, body)) =>
