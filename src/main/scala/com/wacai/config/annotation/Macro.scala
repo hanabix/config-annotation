@@ -94,13 +94,18 @@ class Macro(val c: whitebox.Context) {
 
     case ValDef(mods, name, tpt, rhs) =>
       val e = c.eval(c.Expr[Any](Block(q"import scala.concurrent.duration._" :: Nil, rhs)))
+
       leaf(level)(e match {
         case l: Long     => s"$name = ${bytes(l)}"
         case d: Duration => s"$name = ${time(d)}"
         case v           => s"$name = $v"
       })
 
-      ValDef(mods, name, tpt, get(c.typecheck(rhs).tpe, s"$owner.$name"))
+      try
+        ValDef(mods, name, tpt, get(c.typecheck(rhs).tpe, s"$owner.$name"))
+      catch {
+        case e: IllegalStateException => c.abort(vd.pos, e.getMessage)
+      }
 
     case _ =>
       c.abort(vd.pos, "Unexpect value definition")
@@ -114,7 +119,7 @@ class Macro(val c: whitebox.Context) {
     case _ if is[String](t)   => q"_config.getString($path)"
     case _ if is[Double](t)   => q"_config.getDouble($path)"
     case _ if is[Duration](t) => duration(q"_config.getDuration($path, $seconds)")
-    case _                    => c.abort(c.enclosingPosition, s"Unsupported type: $t")
+    case _                    => throw new IllegalStateException(s"Unsupported type: $t")
   }
 
   object Initialized {
