@@ -32,20 +32,18 @@ class Macro(val c: whitebox.Context) {
 
         implicit val out = new PrintWriter(new File(outputDir, s"$name.conf"))
 
-        def newBody(implicit conf: Tree): List[Tree] = body.map {
-          case Initialized(vd @ ValDef(_, _, _, rhs)) => generate(vd, s"$name", 1)
-          case t                                      => t
-        }
-
         try {
           node(0)(s"$name") {
-            val nb = if (parent exists configurable) {
-              q"private val _config = config" :: newBody(q"_config")
+            val conf = if (parent exists configurable) {
+              q"private val _config = config"
             } else {
-              newBody(reify(CONFIG).tree)
+              q"private val _config = ${reify(CONFIG).tree}"
             }
 
-            ClassDef(mods, name, a, Template(parent, s, nb))
+            ClassDef(mods, name, a, Template(parent, s, conf :: body.map {
+              case Initialized(vd @ ValDef(_, _, _, rhs)) => generate(vd, s"$name", 1)
+              case t                                      => t
+            }))
           }
 
         } finally out.close()
@@ -69,7 +67,7 @@ class Macro(val c: whitebox.Context) {
 
   def configurable(t: Tree): Boolean = is[Configurable](tpe(q"0.asInstanceOf[$t]"))
 
-  def generate(cd: ClassDef, owner: String, level: Int)(implicit conf: Tree, out: PrintWriter): ClassDef = cd match {
+  def generate(cd: ClassDef, owner: String, level: Int)(implicit out: PrintWriter): ClassDef = cd match {
     case ClassDef(m, name, a, Template(p, s, body)) =>
       ClassDef(m, name, a, Template(p, s, body map {
         case Initialized(vd) => generate(vd, s"$owner", level + 1)
@@ -81,7 +79,7 @@ class Macro(val c: whitebox.Context) {
 
   }
 
-  def generate(vd: ValDef, owner: String, level: Int)(implicit conf: Tree, out: PrintWriter): ValDef = vd match {
+  def generate(vd: ValDef, owner: String, level: Int)(implicit out: PrintWriter): ValDef = vd match {
     case ValDef(mods, _, _, _) if mods.hasFlag(DEFERRED) =>
       c.abort(vd.pos, "value should be initialized")
 
@@ -102,20 +100,20 @@ class Macro(val c: whitebox.Context) {
         case v           => s"$name = $v"
       })
 
-      ValDef(mods, name, tpt, get(c.typecheck(rhs).tpe, conf, s"$owner.$name"))
+      ValDef(mods, name, tpt, get(c.typecheck(rhs).tpe, s"$owner.$name"))
 
     case _ =>
       c.abort(vd.pos, "Unexpect value definition")
 
   }
 
-  def get(t: Type, conf: Tree, path: String): Tree = t match {
-    case _ if is[Boolean](t)  => q"$conf.getBoolean($path)"
-    case _ if is[Int](t)      => q"$conf.getInt($path)"
-    case _ if is[Long](t)     => q"$conf.getBytes($path)"
-    case _ if is[String](t)   => q"$conf.getString($path)"
-    case _ if is[Double](t)   => q"$conf.getDouble($path)"
-    case _ if is[Duration](t) => duration(q"$conf.getDuration($path, $seconds)")
+  def get(t: Type, path: String): Tree = t match {
+    case _ if is[Boolean](t)  => q"_config.getBoolean($path)"
+    case _ if is[Int](t)      => q"_config.getInt($path)"
+    case _ if is[Long](t)     => q"_config.getBytes($path)"
+    case _ if is[String](t)   => q"_config.getString($path)"
+    case _ if is[Double](t)   => q"_config.getDouble($path)"
+    case _ if is[Duration](t) => duration(q"_config.getDuration($path, $seconds)")
     case _                    => c.abort(c.enclosingPosition, s"Unsupported type: $t")
   }
 
