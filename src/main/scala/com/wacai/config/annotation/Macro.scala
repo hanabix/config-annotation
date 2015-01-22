@@ -1,5 +1,7 @@
 package com.wacai.config.annotation
 
+import java.io.{PrintWriter, File}
+
 import com.typesafe.config.{Config, ConfigFactory}
 
 import annotation.tailrec
@@ -12,23 +14,42 @@ class Macro(val c: whitebox.Context) {
   import c.universe._
   import Flag._
 
+  lazy val outputDir = {
+    val f = new File(c.settings
+      .find(_.startsWith(OutputDirSettings))
+      .map(_.substring(OutputDirSettings.length))
+      .getOrElse(DefaultOutputDir))
+
+    if (!f.exists()) f.mkdirs()
+
+    f
+  }
+
   def impl(annottees: c.Expr[Any]*): c.Expr[Any] = {
 
     val result = annottees.map(_.tree).toList match {
       case (ClassDef(mods, name, a, Template(parent, s, body))) :: Nil if mods.hasFlag(DEFAULTPARAM | TRAIT) =>
 
+        implicit val out = new PrintWriter(new File(outputDir, s"$name"))
+
         def newBody(implicit conf: Tree): List[Tree] = body.map {
-          case Initialized(vd @ ValDef(_, _, _, rhs)) if !is[Config](tpe(rhs)) => generate(s"$name", vd)
+          case Initialized(vd @ ValDef(_, _, _, rhs)) if !is[Config](tpe(rhs)) => generate(vd, s"$name", 1)
           case t                                                               => t
         }
 
-        val nb = if (body exists configRefDef) {
-          q"private val _config = config" :: newBody(q"_config")
-        } else {
-          newBody(reify(config).tree)
-        }
+        try {
+          node(0)(s"$name") {
+            val nb = if (body exists configRefDef) {
+              q"private val _config = config" :: newBody(q"_config")
+            } else {
+              newBody(reify(CONFIG).tree)
+            }
 
-        ClassDef(mods, name, a, Template(parent, s, nb))
+            ClassDef(mods, name, a, Template(parent, s, nb))
+          }
+
+        } finally out.close()
+
 
       case _ =>
         c.abort(c.enclosingPosition, "Annotation is only supported on trait")
@@ -36,6 +57,7 @@ class Macro(val c: whitebox.Context) {
 
     c.Expr[Any](result)
   }
+
 
   lazy val seconds = reify(SECONDS) tree
 
@@ -50,10 +72,10 @@ class Macro(val c: whitebox.Context) {
     case _                                              => false
   }
 
-  def generate(owner: String, cd: ClassDef)(implicit conf: Tree): ClassDef = cd match {
+  def generate(cd: ClassDef, owner: String, level: Int)(implicit conf: Tree, out: PrintWriter): ClassDef = cd match {
     case ClassDef(m, name, a, Template(p, s, body)) =>
       ClassDef(m, name, a, Template(p, s, body map {
-        case Initialized(vd) => generate(s"$owner", vd)
+        case Initialized(vd) => generate(vd, s"$owner", level + 1)
         case d               => d
       }))
 
@@ -62,7 +84,7 @@ class Macro(val c: whitebox.Context) {
 
   }
 
-  def generate(owner: String, vd: ValDef)(implicit conf: Tree): ValDef = vd match {
+  def generate(vd: ValDef, owner: String, level: Int)(implicit conf: Tree, out: PrintWriter): ValDef = vd match {
     case ValDef(mods, _, _, _) if mods.hasFlag(DEFERRED) =>
       c.abort(vd.pos, "value should be initialized")
 
@@ -70,9 +92,19 @@ class Macro(val c: whitebox.Context) {
       c.abort(vd.pos, "var should be val")
 
     case ValDef(mods, name, tpt, Block((cd: ClassDef) :: Nil, expr)) =>
-      ValDef(mods, name, tpt, Block(generate(s"$owner.$name", cd) :: Nil, expr))
+      node(level)(s"$name") {
+        ValDef(mods, name, tpt, Block(generate(cd, s"$owner.$name", level) :: Nil, expr))
+      }
+
 
     case ValDef(mods, name, tpt, rhs) =>
+      val e = c.eval(c.Expr[Any](Block(q"import scala.concurrent.duration._" :: Nil, rhs)))
+      leaf(level)(e match {
+        case l: Long     => s"$name = ${bytes(l)}"
+        case d: Duration => s"$name = ${time(d)}"
+        case v           => s"$name = $v"
+      })
+
       ValDef(mods, name, tpt, get(c.typecheck(rhs).tpe, conf, s"$owner.$name"))
 
     case _ =>
@@ -100,7 +132,13 @@ class Macro(val c: whitebox.Context) {
 }
 
 object Macro {
-  lazy val config = ConfigFactory.load()
+
+  val DefaultOutputDir  = "src/main/resources"
+  val OutputDirSettings = "conf.output.dir="
+
+  lazy val CONFIG = ConfigFactory.load()
+
+  private val TAB = "  "
 
   def path(c: List[Char], n: List[Char]): String = {
     @tailrec
@@ -113,4 +151,33 @@ object Macro {
 
     s"${uncapitalized(c, '_')}.${uncapitalized(n)}"
   }
+
+  def node[T](level: Int)(name: String)(f: => T)(implicit out: PrintWriter) = {
+    out println s"${TAB * level}$name {"
+    val r = f
+    out println s"${TAB * level}}"
+    r
+  }
+
+  def leaf(level: Int)(expr: String)(implicit out: PrintWriter) = {
+    out.println(s"${TAB * level}$expr")
+  }
+
+  def bytes(l: Long): String = l match {
+    case _ if l < 1024 || l % 1024 > 0                   => s"${l}B"
+    case _ if l >= 1024 && l < 1024 * 1024               => s"${l / 1024}K"
+    case _ if l >= 1024 * 1024 && l < 1024 * 1024 * 1024 => s"${l / (1024 * 1024)}M"
+    case _                                               => s"${l / (1024 * 1024 * 1024)}G"
+  }
+
+  def time(d: Duration): String = d.unit match {
+    case NANOSECONDS  => s"${d._1}ns"
+    case MICROSECONDS => s"${d._1}us"
+    case MILLISECONDS => s"${d._1}ms"
+    case SECONDS      => s"${d._1}s"
+    case MINUTES      => s"${d._1}m"
+    case HOURS        => s"${d._1}h"
+    case DAYS         => s"${d._1}d"
+  }
+
 }
