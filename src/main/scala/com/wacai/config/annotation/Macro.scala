@@ -1,70 +1,106 @@
 package com.wacai.config.annotation
 
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 
 import annotation.tailrec
 import concurrent.duration._
 import reflect.macros.whitebox
 
-object Macro {
+class Macro(val c: whitebox.Context) {
 
-  def impl(c: whitebox.Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
-    import c.universe._
+  import Macro._
+  import c.universe._
+  import Flag._
 
-    def tpe(tpt: Tree) = c.typecheck(q"0.asInstanceOf[$tpt]").tpe
-
-    lazy val confType: Tree = c.prefix.tree match {
-      case q"new $_[$tpt]()" => tpt
-      case _                 => c.abort(c.enclosingPosition, "Invalid definition")
-    }
-
-    lazy val seconds = reify(SECONDS) tree
-
-    def duration(t: Tree) = q"scala.concurrent.duration.Duration($t, $seconds)"
-
-    def get(t: Type, conf: Tree, path: String): Tree = t match {
-      case _ if t <:< typeOf[Boolean]  => q"$conf.getBoolean($path)"
-      case _ if t <:< typeOf[Int]      => q"$conf.getInt($path)"
-      case _ if t <:< typeOf[Long]     => q"$conf.getBytes($path)"
-      case _ if t <:< typeOf[String]   => q"$conf.getString($path)"
-      case _ if t <:< typeOf[Double]   => q"$conf.getDouble($path)"
-      case _ if t <:< typeOf[Duration] => duration(q"$conf.getDuration($path, $seconds)")
-      case _                           => c.abort(c.enclosingPosition, s"Unsupported type: $t")
-    }
-
-    def valDefs(conf: Tree) = tpe(confType).members collect {
-      case ms: MethodSymbol if ms.isAbstract && ms.paramLists.isEmpty => ms
-    } map { m =>
-      val owner = m.owner.name.toString.toList
-      val name = m.name.toString.toList
-      q"val ${m.name}:${m.returnType} = ${get(m.returnType, conf, path(owner, name))}"
-    } toList
-
-    def modify(body: List[Tree], parents: List[Tree]): List[Tree] = {
-      if (parents.exists(t => tpe(t) <:< typeOf[Configurable])) {
-        q"val _config = config" :: valDefs(q"this._config") ::: body
-      } else {
-        valDefs(reify(config) tree) ::: body
-      }
-    }
+  def impl(annottees: c.Expr[Any]*): c.Expr[Any] = {
 
     val result = annottees.map(_.tree).toList match {
-      case ModuleDef(mods, name, Template(parents, self, body)) :: Nil =>
-        ModuleDef(mods, name, Template(parents +? q"$confType", self, modify(body, parents)))
+      case (ClassDef(mods, name, a, Template(parent, s, body))) :: Nil if mods.hasFlag(DEFAULTPARAM | TRAIT) =>
 
-      case ClassDef(mods, name, params, Template(parents, self, body)) :: Nil =>
-        ClassDef(mods, name, params, Template(parents +? q"$confType", self, modify(body, parents)))
+        def newBody(implicit conf: Tree): List[Tree] = body.map {
+          case Initialized(vd @ ValDef(_, _, _, rhs)) if !is[Config](tpe(rhs)) => generate(s"$name", vd)
+          case t                                                               => t
+        }
 
-      case ClassDef(mods, name, params, Template(parents, self, body)) :: obj :: Nil =>
-        val cls = ClassDef(mods, name, params, Template(parents +? q"$confType", self, modify(body, parents)))
-        q"..${cls :: obj :: Nil}"
+        val nb = if (body exists configRefDef) {
+          q"private val _config = config" :: newBody(q"_config")
+        } else {
+          newBody(reify(config).tree)
+        }
+
+        ClassDef(mods, name, a, Template(parent, s, nb))
 
       case _ =>
-        c.abort(c.enclosingPosition, "Annotation is only supported on class or module class")
+        c.abort(c.enclosingPosition, "Annotation is only supported on trait")
     }
 
     c.Expr[Any](result)
   }
+
+  lazy val seconds = reify(SECONDS) tree
+
+  def tpe(t: Tree): Type = c.typecheck(t).tpe
+
+  def is[T: TypeTag](t: Type) = t <:< typeOf[T]
+
+  def duration(t: Tree) = q"scala.concurrent.duration.Duration($t, $seconds)"
+
+  def configRefDef(t: Tree): Boolean = t match {
+    case DefDef(mods, TermName("config"), _, _, _, rhs) => is[Config](tpe(rhs))
+    case _                                              => false
+  }
+
+  def generate(owner: String, cd: ClassDef)(implicit conf: Tree): ClassDef = cd match {
+    case ClassDef(m, name, a, Template(p, s, body)) =>
+      ClassDef(m, name, a, Template(p, s, body map {
+        case Initialized(vd) => generate(s"$owner", vd)
+        case d               => d
+      }))
+
+    case _ =>
+      c.abort(cd.pos, "A anonymous class definition should be here")
+
+  }
+
+  def generate(owner: String, vd: ValDef)(implicit conf: Tree): ValDef = vd match {
+    case ValDef(mods, _, _, _) if mods.hasFlag(DEFERRED) =>
+      c.abort(vd.pos, "value should be initialized")
+
+    case ValDef(mods, _, _, _) if mods.hasFlag(MUTABLE) =>
+      c.abort(vd.pos, "var should be val")
+
+    case ValDef(mods, name, tpt, Block((cd: ClassDef) :: Nil, expr)) =>
+      ValDef(mods, name, tpt, Block(generate(s"$owner.$name", cd) :: Nil, expr))
+
+    case ValDef(mods, name, tpt, rhs) =>
+      ValDef(mods, name, tpt, get(c.typecheck(rhs).tpe, conf, s"$owner.$name"))
+
+    case _ =>
+      c.abort(vd.pos, "Unexpect value definition")
+
+  }
+
+  def get(t: Type, conf: Tree, path: String): Tree = t match {
+    case _ if is[Boolean](t)  => q"$conf.getBoolean($path)"
+    case _ if is[Int](t)      => q"$conf.getInt($path)"
+    case _ if is[Long](t)     => q"$conf.getBytes($path)"
+    case _ if is[String](t)   => q"$conf.getString($path)"
+    case _ if is[Double](t)   => q"$conf.getDouble($path)"
+    case _ if is[Duration](t) => duration(q"$conf.getDuration($path, $seconds)")
+    case _                    => c.abort(c.enclosingPosition, s"Unsupported type: $t")
+  }
+
+  object Initialized {
+    def unapply(t: Tree): Option[ValDef] = t match {
+      case v @ ValDef(mods, _, _, _) if !mods.hasFlag(DEFERRED) => Some(v)
+      case _                                                    => None
+    }
+  }
+
+}
+
+object Macro {
+  lazy val config = ConfigFactory.load()
 
   def path(c: List[Char], n: List[Char]): String = {
     @tailrec
@@ -77,15 +113,4 @@ object Macro {
 
     s"${uncapitalized(c, '_')}.${uncapitalized(n)}"
   }
-
-  lazy val config = ConfigFactory.load()
-
-  implicit class AppendIfAbsent[E](list: List[E]) {
-    def +?(e: E): List[E] = {
-      // TODO improve ugly equals by toString
-      if (list.exists{i => i.toString == e.toString}) list else list ::: List(e)
-    }
-  }
-
 }
-
