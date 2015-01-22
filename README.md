@@ -33,7 +33,13 @@ import scala.concurrent.duration._
 
 ```
 class KafkaConsumer extends kafka {
-  val client = new SimpleConsumer(server.host, server.port, socket.timeout, socket.buffer, client)
+  val client = new SimpleConsumer(
+    server.host,
+    server.port,
+    socket.timeout,
+    socket.buffer,
+    client
+  )
 
   ...
 }
@@ -45,8 +51,8 @@ class KafkaConsumer extends kafka {
 
 kafka {
   server {
-    host = "localhost"
-    port = 9092
+    host = wacai.com
+    port = 12306
   }
 
   socket {
@@ -54,7 +60,7 @@ kafka {
     buffer = 64K
   }
 
-  client = "id"
+  client = wacai
 }
 
 ```
@@ -115,17 +121,9 @@ libraryDependencies += "com.wacai" %% "config-annotation" % "0.3.0"
 import com.wacai.config.annotation._
 
 @conf trait kafka extends Configurable { self: Actor =>
-  val server = new {
-    val host = "localhost"
-    val port = 9092
-  }
-  val socket = new {
-    val timeout = 3s
-    val buffer = 1024 * 64
-  }
-  val client = "id"
-
   def config = context.system.settings.config
+
+  ...
 }
 ```
 
