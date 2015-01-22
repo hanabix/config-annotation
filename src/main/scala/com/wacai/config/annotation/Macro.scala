@@ -30,7 +30,7 @@ class Macro(val c: whitebox.Context) {
     val result = annottees.map(_.tree).toList match {
       case (ClassDef(mods, name, a, Template(parent, s, body))) :: Nil if mods.hasFlag(DEFAULTPARAM | TRAIT) =>
 
-        implicit val out = new PrintWriter(new File(outputDir, s"$name"))
+        implicit val out = new PrintWriter(new File(outputDir, s"$name.conf"))
 
         def newBody(implicit conf: Tree): List[Tree] = body.map {
           case Initialized(vd @ ValDef(_, _, _, rhs)) if !is[Config](tpe(rhs)) => generate(vd, s"$name", 1)
