@@ -3,15 +3,15 @@
 [![Build Status](https://travis-ci.org/wacai/config-annotation.png?branch=master)](https://travis-ci.org/wacai/config-annotation)
 [![Codacy Badge](https://www.codacy.com/project/badge/b9158949586c439cb05e21333f52798b)](https://www.codacy.com/public/zhonglunfu/config-annotation)
 
-Using scala [macro annotation][mcr] to mark a [config][conf] style `trait` for mapping items from [config][conf] file.
+A refactor-friendly configuration lib would help scala programmers to manage config files without any pain,
+by using scala [macro annotation][mcr].
 
-## Example
+## Usage
 
-`kafka.scala`:
+Create a config-style trait as configuration definition, eg:
 
 ```
 import com.wacai.config.annotation._
-
 import scala.concurrent.duration._
 
 @conf trait kafka {
@@ -21,18 +21,18 @@ import scala.concurrent.duration._
   }
 
   val socket = new {
-    val timeout = 3s
-    val buffer = 1024 * 64
+    val timeout = 3 seconds
+    val buffer = 1024 * 64L
   }
 
   val client = "id"
 }
 ```
 
-`KafkaConsumer.scala`:
+Use config by extending it,
 
 ```
-class KafkaConsumer extends kafka {
+class Consumer extends kafka {
   val client = new SimpleConsumer(
     server.host,
     server.port,
@@ -45,10 +45,27 @@ class KafkaConsumer extends kafka {
 }
 ```
 
-`application.conf`:
+Compile, `@conf` will let scala compiler to insert codes to `kafka.scala`:
 
 ```
+trait kafka {
+  val server = new {
+    val host = config.getString("kafka.server.host")
+    val port = config.getInt("kafka.server.port")
+  }
+  val socket = new {
+    val timeout = Duration(config.getDuration("kafka.socket.timeout", SECONDS))
+    val buffer = config.getBytes("kafka.socket.buffer")
+  }
+  val client = config.getString("kafka.client")
 
+  ...
+}
+```
+
+After that, a config file named `kafka.conf` was generated at `src/main/resources` as blow:
+
+```
 kafka {
   server {
     host = wacai.com
@@ -65,23 +82,12 @@ kafka {
 
 ```
 
-`@conf` will let scala compile to insert codes to `kafka.scala`:
+Last but not least, a `application.conf` need to be created to include `kafka.conf` like:
 
 ```
-trait kafka {
-  val server = new {
-    val host = config.getString("kafka.host")
-    val port = config.getInt("kafka.port")
-  }
-  val socket = new {
-    val timeout = Duration(config.getDuration("kafka.socket.timeout", SECONDS))
-    val buffer = config.getBytes("kafka.socket.buffer")
-  }
-  val client = config.getString("kafka.client")
-
-  ...
-}
+include "kafka.conf"
 ```
+
 
 ## Installation
 
@@ -105,14 +111,14 @@ libraryDependencies += "com.wacai" %% "config-annotation" % "0.3.0"
 
 ## Type covenant
 
-|Scala type | Config getter |
-|-----------|---------------|
-| Boolean   | getBoolean    |
-| Int       | getInt        |
-| Long      | getBytes      |
-| Double    | getDouble     |
-| String    | getString     |
-| +Duration | getDuration   |
+|Scala type | Config getter | Value      |
+|-----------|---------------|------------|
+| Boolean   | getBoolean    | true/false |
+| Int       | getInt        | number     |
+| Double    | getDouble     | float      |
+| String    | getString     | text       |
+| Long      | getBytes      | number with unit (B, K, M, G)       |
+| +Duration | getDuration   | number with unit (ns, us, ms, s, m, h, d)|
 
 
 ## Integrate with akka actor
@@ -127,10 +133,21 @@ import com.wacai.config.annotation._
 }
 ```
 
-## More detail
+## Change default generation directory
 
-Please see test cases.
+Config files would be generated at `src/main/resources` as default.
+
+It can be changed by appending macro setting to `scalacOption` in `build.sbt`:
+
+```
+scalacOptions += "-Xmacro-settings:conf.output.dir=/path/to/out"
+```
+
+## A runnable example
+
+Please see [config-annotation-example][cae].
 
 
 [mcr]:http://docs.scala-lang.org/overviews/macros/annotations.html
 [conf]:https://github.com/typesafehub/config
+[cae]:https://github.com/wacai/config-annotation-example
