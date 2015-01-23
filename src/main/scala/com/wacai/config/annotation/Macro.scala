@@ -1,8 +1,8 @@
 package com.wacai.config.annotation
 
-import java.io.{PrintWriter, File}
+import java.io.{File, PrintWriter}
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.ConfigFactory
 
 import annotation.tailrec
 import concurrent.duration._
@@ -139,18 +139,6 @@ object Macro {
   lazy val CONFIG = ConfigFactory.load()
 
   private val TAB = "  "
-
-  def path(c: List[Char], n: List[Char]): String = {
-    @tailrec
-    def uncapitalized(o: List[Char], d: Char = '.', r: List[Char] = Nil): String = (o, r) match {
-      case (Nil, l)                          => l.reverse mkString ""
-      case (h :: t, _) if !h.isLetterOrDigit => uncapitalized(t, d, r)
-      case (h :: t, Nil)                     => uncapitalized(t, d, (if (h.isUpper) h.toLower else h) :: r)
-      case (h :: t, _)                       => uncapitalized(t, d, if (h.isUpper) h.toLower :: d :: r else h :: r)
-    }
-
-    s"${uncapitalized(c, '_')}.${uncapitalized(n)}"
-  }
 
   def node[T](level: Int)(name: String)(f: => T)(implicit out: PrintWriter) = {
     out println s"${TAB * level}$name {"
