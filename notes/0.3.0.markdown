@@ -1,0 +1,4 @@
+- Define configuration in [config](https://github.com/typesafehub/config)-style DSL;
+- Generate `xxx.conf` file after refactoring definition automatically;
+- Bind values from the `xxx.conf` by macro annotation automatically.
+
