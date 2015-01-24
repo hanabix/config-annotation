@@ -4,7 +4,6 @@ import java.io.{File, PrintWriter}
 
 import com.typesafe.config.ConfigFactory
 
-import annotation.tailrec
 import concurrent.duration._
 import reflect.macros.whitebox
 
