@@ -27,19 +27,19 @@ class Macro(val c: whitebox.Context) {
   def impl(annottees: c.Expr[Any]*): c.Expr[Any] = {
 
     val result = annottees.map(_.tree).toList match {
-      case (ClassDef(mods, name, a, Template(parent, s, body))) :: Nil if mods.hasFlag(DEFAULTPARAM | TRAIT) =>
+      case (ClassDef(mods, name, a, Template(parents, s, body))) :: Nil if mods.hasFlag(DEFAULTPARAM | TRAIT) =>
 
         implicit val out = new PrintWriter(new File(outputDir, s"$name.conf"))
 
         try {
           node(0)(s"$name") {
-            val conf = if (parent exists configurable) {
+            val conf = if (parents exists configurable) {
               q"private val _config = config"
             } else {
               q"private val _config = ${reify(CONFIG).tree}"
             }
 
-            ClassDef(mods, name, a, Template(parent, s, conf :: body.map {
+            ClassDef(mods, name, a, Template(parents, s, conf :: body.map {
               case Initialized(vd @ ValDef(_, _, _, rhs)) => generate(vd, s"$name", 1)
               case t                                      => t
             }))
