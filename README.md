@@ -16,8 +16,8 @@ import scala.concurrent.duration._
 
 @conf trait kafka {
   val server = new {
-    val host = "localhost"
-    val port = 9092
+    val host = "wacai.com"
+    val port = 12306
   }
 
   val socket = new {
@@ -25,7 +25,7 @@ import scala.concurrent.duration._
     val buffer = 1024 * 64L
   }
 
-  val client = "id"
+  val client = "wacai"
 }
 ```
 
