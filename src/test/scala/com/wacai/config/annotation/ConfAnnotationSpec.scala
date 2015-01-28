@@ -15,28 +15,16 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
     conf.socket.buffer shouldBe 1024 * 1024L
     conf.client shouldBe "wacai"
     conf.debug shouldBe true
+    conf.concurrency shouldBe 128
   }
 
 }
 
-@conf trait kafka extends Configurable {
-
-  val server = new {
-    val host = "localhost"
-    val port = 9092
-  }
-
-  val socket = new {
-    val timeout = 5 seconds
-    val buffer = 1024 * 64L
-  }
-
-  val client = "id"
-
-  val debug = false
-
-  def config = ConfigFactory.parseString(
+object test {
+  val config = ConfigFactory.parseString(
     """
+      |common.load = 128
+      |
       |kafka {
       |  server {
       |    host: wacai.com
@@ -53,4 +41,30 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
       |  debug:yes
       |}
     """.stripMargin)
+
+}
+
+@conf trait kafka extends Configurable with common {
+
+  val server = new {
+    val host = "localhost"
+    val port = 9092
+  }
+
+  val socket = new {
+    val timeout = 5 seconds
+    val buffer  = 1024 * 64L
+  }
+
+  val client = "id"
+
+  val debug = false
+
+  val concurrency = load
+
+  def config = test.config
+}
+
+@conf trait common extends Configurable {
+  val load = 128
 }

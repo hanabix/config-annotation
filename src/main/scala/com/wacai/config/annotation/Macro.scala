@@ -2,6 +2,7 @@ package com.wacai.config.annotation
 
 import java.io.{File, PrintWriter}
 
+import com.sun.java.swing.plaf.windows.WindowsBorders.ToolBarBorder
 import com.typesafe.config.ConfigFactory
 
 import concurrent.duration._
@@ -92,18 +93,20 @@ class Macro(val c: whitebox.Context) {
 
 
     case ValDef(mods, name, tpt, rhs) =>
-      val e = c.eval(c.Expr[Any](Block(q"import scala.concurrent.duration._" :: Nil, rhs)))
+      try {
 
-      leaf(level)(e match {
-        case l: Long     => s"$name = ${bytes(l)}"
-        case d: Duration => s"$name = ${time(d)}"
-        case v           => s"$name = $v"
-      })
+        val e = c.eval(c.Expr[Any](Block(q"import scala.concurrent.duration._" :: Nil, rhs)))
 
-      try
+        leaf(level)(e match {
+          case l: Long     => s"$name = ${bytes(l)}"
+          case d: Duration => s"$name = ${time(d)}"
+          case v           => s"$name = $v"
+        })
+
         ValDef(mods, name, tpt, get(c.typecheck(rhs).tpe, s"$owner.$name"))
-      catch {
+      } catch {
         case e: IllegalStateException => c.abort(vd.pos, e.getMessage)
+        case _: Throwable             => vd
       }
 
     case _ =>
