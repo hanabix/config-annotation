@@ -16,6 +16,7 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
     conf.client shouldBe "wacai"
     conf.debug shouldBe true
     conf.concurrency shouldBe 128
+    conf.delays shouldBe List(1 second, 2 minutes)
   }
 
 }
@@ -39,6 +40,8 @@ object test {
       |  client: wacai
       |
       |  debug:yes
+      |
+      |  delays:[1s,2m]
       |}
     """.stripMargin)
 
@@ -61,6 +64,8 @@ object test {
   val debug = false
 
   val concurrency = load
+
+  val delays = List(1 second, 2 minutes)
 
   def config = test.config
 }

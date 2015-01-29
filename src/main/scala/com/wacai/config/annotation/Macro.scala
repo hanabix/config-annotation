@@ -34,13 +34,15 @@ class Macro(val c: whitebox.Context) {
 
         try {
           node(0)(s"$name") {
+            val imports = q"import scala.collection.JavaConversions._"
+
             val conf = if (parents exists configurable) {
               q"private val _config = config"
             } else {
               q"private val _config = ${reify(CONFIG).tree}"
             }
 
-            ClassDef(mods, name, a, Template(parents, s, conf :: body.map {
+            ClassDef(mods, name, a, Template(parents, s, imports :: conf :: body.map {
               case Initialized(vd @ ValDef(_, _, _, rhs)) => generate(vd, s"$name", 1)
               case t                                      => t
             }))
@@ -91,19 +93,13 @@ class Macro(val c: whitebox.Context) {
         ValDef(mods, name, tpt, Block(generate(cd, s"$owner.$name", level) :: Nil, expr))
       }
 
-
     case ValDef(mods, name, tpt, rhs) =>
       try {
-
         val e = c.eval(c.Expr[Any](Block(q"import scala.concurrent.duration._" :: Nil, rhs)))
+        val t = c.typecheck(rhs).tpe
 
-        leaf(level)(e match {
-          case l: Long     => s"$name = ${bytes(l)}"
-          case d: Duration => s"$name = ${time(d)}"
-          case v           => s"$name = $v"
-        })
-
-        ValDef(mods, name, tpt, get(c.typecheck(rhs).tpe, s"$owner.$name"))
+        leaf(level)(s"$name = ${value(t, e)}")
+        ValDef(mods, name, tpt, get(t, s"$owner.$name"))
       } catch {
         case e: IllegalStateException => c.abort(vd.pos, e.getMessage)
         case _: Throwable             => vd
@@ -114,14 +110,30 @@ class Macro(val c: whitebox.Context) {
 
   }
 
+  def value(t: Type, a: Any) = t match {
+    case _ if is[Long](t)           => bytes(a.asInstanceOf[Long])
+    case _ if is[Duration](t)       => time(a.asInstanceOf[Duration])
+    case _ if is[List[Long]](t)     => a.asInstanceOf[List[Long]].map(bytes).mkString("[", ", ", "]")
+    case _ if is[List[Duration]](t) => a.asInstanceOf[List[Duration]].map(time).mkString("[", ", ", "]")
+    case _ if is[List[_]](t)        => a.asInstanceOf[List[_]].mkString("[", ", ", "]")
+    case _                          => a.toString
+  }
+
+
   def get(t: Type, path: String): Tree = t match {
-    case _ if is[Boolean](t)  => q"_config.getBoolean($path)"
-    case _ if is[Int](t)      => q"_config.getInt($path)"
-    case _ if is[Long](t)     => q"_config.getBytes($path)"
-    case _ if is[String](t)   => q"_config.getString($path)"
-    case _ if is[Double](t)   => q"_config.getDouble($path)"
-    case _ if is[Duration](t) => duration(q"_config.getDuration($path, $seconds)")
-    case _                    => throw new IllegalStateException(s"Unsupported type: $t")
+    case _ if is[Boolean](t)        => q"_config.getBoolean($path)"
+    case _ if is[Int](t)            => q"_config.getInt($path)"
+    case _ if is[Long](t)           => q"_config.getBytes($path)"
+    case _ if is[String](t)         => q"_config.getString($path)"
+    case _ if is[Double](t)         => q"_config.getDouble($path)"
+    case _ if is[Duration](t)       => duration(q"_config.getDuration($path, $seconds)")
+    case _ if is[List[Boolean]](t)  => q"_config.getBooleanList($path).toList"
+    case _ if is[List[Int]](t)      => q"_config.getIntList($path).toList"
+    case _ if is[List[Long]](t)     => q"_config.getLongList($path).toList"
+    case _ if is[List[String]](t)   => q"_config.getStringList($path).toList"
+    case _ if is[List[Double]](t)   => q"_config.getDoubleList($path).toList"
+    case _ if is[List[Duration]](t) => q"_config.getDurationList($path, $seconds).toList.map {l => ${duration(q"l")} }"
+    case _                          => throw new IllegalStateException(s"Unsupported type: $t")
   }
 
   object Initialized {
