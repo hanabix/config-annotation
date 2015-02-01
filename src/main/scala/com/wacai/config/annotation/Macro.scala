@@ -129,7 +129,7 @@ class Macro(val c: whitebox.Context) {
     case _ if is[Duration](t)       => duration(q"_config.getDuration($path, $seconds)")
     case _ if is[List[Boolean]](t)  => q"_config.getBooleanList($path).toList"
     case _ if is[List[Int]](t)      => q"_config.getIntList($path).toList"
-    case _ if is[List[Long]](t)     => q"_config.getLongList($path).toList"
+    case _ if is[List[Long]](t)     => q"_config.getBytesList($path).toList"
     case _ if is[List[String]](t)   => q"_config.getStringList($path).toList"
     case _ if is[List[Double]](t)   => q"_config.getDoubleList($path).toList"
     case _ if is[List[Duration]](t) => q"_config.getDurationList($path, $seconds).toList.map {l => ${duration(q"l")} }"

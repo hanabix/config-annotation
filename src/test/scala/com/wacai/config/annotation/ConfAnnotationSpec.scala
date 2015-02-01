@@ -15,39 +15,26 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
     conf.socket.buffer shouldBe 1024 * 1024L
     conf.client shouldBe "wacai"
     conf.debug shouldBe true
-    conf.concurrency shouldBe 128
-    conf.delays shouldBe List(1 second, 2 minutes)
+    conf.delays shouldBe 2.seconds
+  }
+
+  it should "get substitution value" in {
+    (new concrete {} value) shouldBe 128
+  }
+
+  it should "get list value" in {
+    val conf = new list {}
+    conf.i shouldBe List(1, 2)
+    conf.b shouldBe List(true, false)
+    conf.d shouldBe List(1.1, 2.2)
+    conf.l shouldBe List(512L, 1024 * 3L)
+    conf.t shouldBe List(1 second, 2 minutes)
+    conf.s shouldBe List("a", "b")
   }
 
 }
 
-object test {
-  val config = ConfigFactory.parseString(
-    """
-      |common.load = 128
-      |
-      |kafka {
-      |  server {
-      |    host: wacai.com
-      |    port: 12306
-      |  }
-      |
-      |  socket {
-      |    timeout = 3s
-      |    buffer  = 1M
-      |  }
-      |
-      |  client: wacai
-      |
-      |  debug:yes
-      |
-      |  delays:[1s,2m]
-      |}
-    """.stripMargin)
-
-}
-
-@conf trait kafka extends Configurable with common {
+@conf trait kafka extends Configurable {
 
   val server = new {
     val host = "localhost"
@@ -63,13 +50,43 @@ object test {
 
   val debug = false
 
-  val concurrency = load
+  val delays = 2 seconds
 
-  val delays = List(1 second, 2 minutes)
-
-  def config = test.config
+  def config = ConfigFactory.parseString(
+    """|
+      |kafka {
+      |  server {
+      |    host: wacai.com
+      |    port: 12306
+      |  }
+      |
+      |  socket {
+      |    timeout = 3s
+      |    buffer  = 1M
+      |  }
+      |
+      |  client: wacai
+      |
+      |  debug:yes
+      |
+      |  delays:2s
+      |}
+    """.stripMargin)
 }
 
-@conf trait common extends Configurable {
-  val load = 128
+@conf trait common {
+  val sub = 128
+}
+
+@conf trait concrete extends common {
+  val value = sub
+}
+
+@conf trait list {
+  val i = List(1, 2)
+  val b = List(true, false)
+  val d = List(1.1, 2.2)
+  val l = List(512L, 1024 * 3L)
+  val t = List(1 second, 2 minutes)
+  val s = List("a", "b")
 }
