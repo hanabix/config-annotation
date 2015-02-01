@@ -1,0 +1,3 @@
+- Support substitution in config-style trait;
+- Supprot list value.
+
