@@ -10,7 +10,7 @@ by using scala [macro annotation][mcr].
 
 Create a config-style trait as configuration definition, eg:
 
-```
+```scala
 import com.wacai.config.annotation._
 import scala.concurrent.duration._
 
@@ -31,7 +31,7 @@ import scala.concurrent.duration._
 
 Use config by extending it,
 
-```
+```scala
 class Consumer extends kafka {
   val client = new SimpleConsumer(
     server.host,
@@ -47,7 +47,7 @@ class Consumer extends kafka {
 
 Compile, `@conf` will let scala compiler to insert codes to `kafka.scala`:
 
-```
+```scala
 trait kafka {
   val server = new {
     val host = config.getString("kafka.server.host")
@@ -103,7 +103,7 @@ sbt.version = 0.13.5
 
 Set up your `build.sbt` with:
 
-```
+```scala
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
 
 libraryDependencies += "com.wacai" %% "config-annotation" % "0.3.0"
@@ -123,7 +123,7 @@ libraryDependencies += "com.wacai" %% "config-annotation" % "0.3.0"
 
 ## Integrate with akka actor
 
-```
+```scala
 import com.wacai.config.annotation._
 
 @conf trait kafka extends Configurable { self: Actor =>
@@ -139,7 +139,7 @@ Config files would be generated at `src/main/resources` as default.
 
 It can be changed by appending macro setting to `scalacOption` in `build.sbt`:
 
-```
+```scala
 scalacOptions += "-Xmacro-settings:conf.output.dir=/path/to/out"
 ```
 
