@@ -4,6 +4,7 @@ import java.io.{File, PrintWriter}
 
 import com.sun.java.swing.plaf.windows.WindowsBorders.ToolBarBorder
 import com.typesafe.config.ConfigFactory
+import com.typesafe.config.impl.ConfigImplUtil
 
 import concurrent.duration._
 import reflect.macros.whitebox
@@ -115,10 +116,19 @@ class Macro(val c: whitebox.Context) {
     case _ if is[Duration](t)       => time(a.asInstanceOf[Duration])
     case _ if is[List[Long]](t)     => a.asInstanceOf[List[Long]].map(bytes).mkString("[", ", ", "]")
     case _ if is[List[Duration]](t) => a.asInstanceOf[List[Duration]].map(time).mkString("[", ", ", "]")
-    case _ if is[List[_]](t)        => a.asInstanceOf[List[_]].mkString("[", ", ", "]")
-    case _                          => a.toString
+    case _ if is[List[_]](t)        => a.asInstanceOf[List[_]].map(e=>safeString(e.toString)).mkString("[", ", ", "]")
+    case _                          => safeString(a.toString)
   }
 
+  def quotationNeeded(input:String) = {
+    List("$", "\"", "{", "}", "[", "]", ":", "=", ",", "+", "#", "`", "^", "?", "!", "@", "*", "&", "\\\\").exists{
+      ch=> input.indexOf(ch) != -1
+    }
+  }
+
+  def safeString(input:String) = {
+    if (quotationNeeded(input)) ConfigImplUtil.renderJsonString(input) else input
+  }
 
   def get(t: Type, path: String): Tree = t match {
     case _ if is[Boolean](t)        => q"_config.getBoolean($path)"
