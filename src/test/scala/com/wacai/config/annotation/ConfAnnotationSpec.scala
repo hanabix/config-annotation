@@ -18,6 +18,13 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
     conf.delays shouldBe 2.seconds
   }
 
+  it should "save and load strings with special characters" in {
+    val conf = new specialchars {}
+    conf.url shouldBe "http://localhost:8080/"
+    conf.urls shouldBe List("http://localhost:8080/")
+    conf.all shouldBe List("$", "\"", "{", "}", "[", "]", ":", "=", ",", "+", "#", "`", "^", "?", "!", "@", "*", "&", "\\\\")
+  }
+
   it should "get substitution value" in {
     (new concrete {} value) shouldBe 128
   }
@@ -80,6 +87,12 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
 
 @conf trait concrete extends common {
   val value = sub
+}
+
+@conf trait specialchars {
+  val url = "http://localhost:8080/"
+  val urls = List("http://localhost:8080/")
+  val all = List("$", "\"", "{", "}", "[", "]", ":", "=", ",", "+", "#", "`", "^", "?", "!", "@", "*", "&", "\\\\")
 }
 
 @conf trait list {
