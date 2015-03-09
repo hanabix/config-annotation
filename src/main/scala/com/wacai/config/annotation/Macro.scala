@@ -2,7 +2,6 @@ package com.wacai.config.annotation
 
 import java.io.{File, PrintWriter}
 
-import com.sun.java.swing.plaf.windows.WindowsBorders.ToolBarBorder
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.impl.ConfigImplUtil
 
