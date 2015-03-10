@@ -195,7 +195,7 @@ object Macro {
 
   def safeString(input: Any) = {
     def quotationNeeded(s: String) = List(
-      '$', '\'', '{', '}', '[', ']',
+      '$', '"', '{', '}', '[', ']',
       ':', '=', ',', '+', '#', '`',
       '^', '?', '!', '@', '*', '&', '\\'
     ).exists {s.indexOf(_) != -1}
