@@ -3,8 +3,8 @@ package com.wacai.config.annotation
 import java.io.{File, PrintWriter}
 
 import com.typesafe.config.ConfigFactory
-import com.typesafe.config.impl.ConfigImplUtil
 
+import annotation.switch
 import concurrent.duration._
 import reflect.macros.whitebox
 
@@ -110,41 +110,35 @@ class Macro(val c: whitebox.Context) {
 
   }
 
-  def value(t: Type, a: Any) = t match {
-    case _ if is[Long](t)           => bytes(a.asInstanceOf[Long])
-    case _ if is[Duration](t)       => time(a.asInstanceOf[Duration])
-    case _ if is[List[Long]](t)     => a.asInstanceOf[List[Long]].map(bytes).mkString("[", ", ", "]")
-    case _ if is[List[Duration]](t) => a.asInstanceOf[List[Duration]].map(time).mkString("[", ", ", "]")
-    case _ if is[List[_]](t)        => a.asInstanceOf[List[_]].map(e=>safeString(e.toString)).mkString("[", ", ", "]")
-    case _ if is[Map[_,_]](t)       => a.asInstanceOf[Map[_,_]].map{case (k:Any,v:Any)=> k.toString + ": " + v.toString}.mkString("{ ", ", ", " }")
-    case _                          => safeString(a.toString)
-  }
+  def value(t: Type, a: Any): String = {
+    implicit val mkString = (_: TraversableOnce[_]).mkString("[", ", ", "]")
 
-  def quotationNeeded(input:String) = {
-    List("$", "\"", "{", "}", "[", "]", ":", "=", ",", "+", "#", "`", "^", "?", "!", "@", "*", "&", "\\\\").exists{
-      ch=> input.indexOf(ch) != -1
+    t match {
+      case _ if is[Long](t)           => bytes(a.asInstanceOf[Long])
+      case _ if is[Duration](t)       => time(a.asInstanceOf[Duration])
+      case _ if is[List[Long]](t)     => a.asInstanceOf[List[Long]].map(bytes).asArray
+      case _ if is[List[Duration]](t) => a.asInstanceOf[List[Duration]].map(time).asArray
+      case _ if is[List[_]](t)        => a.asInstanceOf[List[_]].map(safeString).asArray
+      case _ if is[Map[_, _]](t)      => a.asInstanceOf[Map[_, _]].map { case (k, v) => s"$k:${safeString(v)}"}.asObject
+      case _                          => safeString(a)
     }
   }
 
-  def safeString(input:String) = {
-    if (quotationNeeded(input)) ConfigImplUtil.renderJsonString(input) else input
-  }
-
   def get(t: Type, path: String): Tree = t match {
-    case _ if is[Boolean](t)        => q"_config.getBoolean($path)"
-    case _ if is[Int](t)            => q"_config.getInt($path)"
-    case _ if is[Long](t)           => q"_config.getBytes($path)"
-    case _ if is[String](t)         => q"_config.getString($path)"
-    case _ if is[Double](t)         => q"_config.getDouble($path)"
-    case _ if is[Duration](t)       => duration(q"_config.getDuration($path, $seconds)")
-    case _ if is[List[Boolean]](t)  => q"_config.getBooleanList($path).toList"
-    case _ if is[List[Int]](t)      => q"_config.getIntList($path).toList"
-    case _ if is[List[Long]](t)     => q"_config.getBytesList($path).toList"
-    case _ if is[List[String]](t)   => q"_config.getStringList($path).toList"
-    case _ if is[List[Double]](t)   => q"_config.getDoubleList($path).toList"
-    case _ if is[List[Duration]](t) => q"_config.getDurationList($path, $seconds).toList.map {l => ${duration(q"l")} }"
-    case _ if is[Map[String,String]](t) => q"_config.getObject($path).map{case(x,y)=>x.toString -> y.unwrapped.toString}.toMap[String,String]"
-    case _                          => throw new IllegalStateException(s"Unsupported type: $t")
+    case _ if is[Boolean](t)             => q"_config.getBoolean($path)"
+    case _ if is[Int](t)                 => q"_config.getInt($path)"
+    case _ if is[Long](t)                => q"_config.getBytes($path)"
+    case _ if is[String](t)              => q"_config.getString($path)"
+    case _ if is[Double](t)              => q"_config.getDouble($path)"
+    case _ if is[Duration](t)            => duration(q"_config.getDuration($path, $seconds)")
+    case _ if is[List[Boolean]](t)       => q"_config.getBooleanList($path).toList"
+    case _ if is[List[Int]](t)           => q"_config.getIntList($path).toList"
+    case _ if is[List[Long]](t)          => q"_config.getBytesList($path).toList"
+    case _ if is[List[String]](t)        => q"_config.getStringList($path).toList"
+    case _ if is[List[Double]](t)        => q"_config.getDoubleList($path).toList"
+    case _ if is[List[Duration]](t)      => q"_config.getDurationList($path, $seconds).toList.map {l => ${duration(q"l")} }"
+    case _ if is[Map[String, String]](t) => q"_config.getObject($path).map{case(x,y)=>x.toString -> y.unwrapped.toString}.toMap[String,String]"
+    case _                               => throw new IllegalStateException(s"Unsupported type: $t")
   }
 
   object Initialized {
@@ -191,6 +185,51 @@ object Macro {
     case MINUTES      => s"${d._1}m"
     case HOURS        => s"${d._1}h"
     case DAYS         => s"${d._1}d"
+  }
+
+  implicit class MkString(t: TraversableOnce[_]) {
+    def asArray = t.mkString("[", ", ", "]")
+
+    def asObject = t.mkString("{", ", ", "}")
+  }
+
+  def safeString(input: Any) = {
+    def quotationNeeded(s: String) = List(
+      '$', '\'', '{', '}', '[', ']',
+      ':', '=', ',', '+', '#', '`',
+      '^', '?', '!', '@', '*', '&', '\\'
+    ).exists {s.indexOf(_) != -1}
+
+    def renderJsonString(s: String): String = {
+      val sb: StringBuilder = new StringBuilder
+      sb.append('"')
+      for (c <- s) {
+        (c: @switch) match {
+          case '"'  =>
+            sb.append("\\\"")
+          case '\\' =>
+            sb.append("\\\\")
+          case '\n' =>
+            sb.append("\\n")
+          case '\b' =>
+            sb.append("\\b")
+          case '\f' =>
+            sb.append("\\f")
+          case '\r' =>
+            sb.append("\\r")
+          case '\t' =>
+            sb.append("\\t")
+          case _    =>
+            if (Character.isISOControl(c)) sb.append("\\u%04x".format(c.toInt))
+            else sb.append(c)
+        }
+      }
+      sb.append('"')
+      sb.toString()
+    }
+
+    val s = input.toString
+    if (quotationNeeded(s)) renderJsonString(s) else s
   }
 
 }

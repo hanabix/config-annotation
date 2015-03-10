@@ -1,0 +1,3 @@
+- Quote strings if they contain special characters by @lustefaniak;
+- Simple support for Map[String,String] by @lustefaniak.
+

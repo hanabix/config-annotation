@@ -106,7 +106,7 @@ Set up your `build.sbt` with:
 ```scala
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
 
-libraryDependencies += "com.wacai" %% "config-annotation" % "0.3.1"
+libraryDependencies += "com.wacai" %% "config-annotation" % "0.3.2"
 ```
 
 ## Type covenant
