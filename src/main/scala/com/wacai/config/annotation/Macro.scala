@@ -111,7 +111,6 @@ class Macro(val c: whitebox.Context) {
   }
 
   def value(t: Type, a: Any): String = {
-    implicit val mkString = (_: TraversableOnce[_]).mkString("[", ", ", "]")
 
     t match {
       case _ if is[Long](t)           => bytes(a.asInstanceOf[Long])
