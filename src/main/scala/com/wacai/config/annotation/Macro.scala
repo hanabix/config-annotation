@@ -116,6 +116,7 @@ class Macro(val c: whitebox.Context) {
     case _ if is[List[Long]](t)     => a.asInstanceOf[List[Long]].map(bytes).mkString("[", ", ", "]")
     case _ if is[List[Duration]](t) => a.asInstanceOf[List[Duration]].map(time).mkString("[", ", ", "]")
     case _ if is[List[_]](t)        => a.asInstanceOf[List[_]].map(e=>safeString(e.toString)).mkString("[", ", ", "]")
+    case _ if is[Map[_,_]](t)       => a.asInstanceOf[Map[_,_]].map{case (k:Any,v:Any)=> k.toString + ": " + v.toString}.mkString("{ ", ", ", " }")
     case _                          => safeString(a.toString)
   }
 
@@ -142,6 +143,7 @@ class Macro(val c: whitebox.Context) {
     case _ if is[List[String]](t)   => q"_config.getStringList($path).toList"
     case _ if is[List[Double]](t)   => q"_config.getDoubleList($path).toList"
     case _ if is[List[Duration]](t) => q"_config.getDurationList($path, $seconds).toList.map {l => ${duration(q"l")} }"
+    case _ if is[Map[String,String]](t) => q"_config.getObject($path).map{case(x,y)=>x.toString -> y.unwrapped.toString}.toMap[String,String]"
     case _                          => throw new IllegalStateException(s"Unsupported type: $t")
   }
 

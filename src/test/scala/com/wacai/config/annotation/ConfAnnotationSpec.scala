@@ -39,6 +39,12 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
     conf.s shouldBe List("a", "b")
   }
 
+  it should "know how to save and load Map[String,String]" in {
+    val conf = new maps{}
+    conf.ab shouldBe Map("a" -> "b")
+    conf.abcd shouldBe Map[String,String]("a" -> "b", "c" -> "d")
+  }
+
 }
 
 @conf trait kafka extends Configurable {
@@ -102,4 +108,9 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
   val l = List(512L, 1024 * 3L)
   val t = List(1 second, 2 minutes)
   val s = List("a", "b")
+}
+
+@conf trait maps {
+  val ab = Map[String,String]("a" -> "b")
+  val abcd = Map[String,String]("a" -> "b", "c" -> "d")
 }
