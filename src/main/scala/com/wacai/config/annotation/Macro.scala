@@ -43,8 +43,8 @@ class Macro(val c: whitebox.Context) {
             }
 
             ClassDef(mods, name, a, Template(parents, s, imports :: conf :: body.map {
-              case Initialized(vd @ ValDef(_, _, _, rhs)) => generate(vd, s"$name", 1)
-              case t                                      => t
+              case Initialized(vd) => generate(vd, s"$name", 1)
+              case t               => t
             }))
           }
 
@@ -118,7 +118,9 @@ class Macro(val c: whitebox.Context) {
       case _ if is[List[Long]](t)     => a.asInstanceOf[List[Long]].map(bytes).asArray
       case _ if is[List[Duration]](t) => a.asInstanceOf[List[Duration]].map(time).asArray
       case _ if is[List[_]](t)        => a.asInstanceOf[List[_]].map(safeString).asArray
-      case _ if is[Map[_, _]](t)      => a.asInstanceOf[Map[_, _]].map { case (k, v) => s"$k:${safeString(v)}"}.asObject
+      case _ if is[Map[_, _]](t)      => a.asInstanceOf[Map[_, _]]
+        .map { case (k, v) => s"$k:${safeString(v)}" }
+        .asObject
       case _                          => safeString(a)
     }
   }
