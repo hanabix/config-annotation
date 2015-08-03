@@ -14,6 +14,7 @@ lazy val basicSettings = Seq(
   scalacOptions += "-feature",
   scalacOptions += "-unchecked",
   scalacOptions += "-deprecation",
+  scalacOptions += "-Xmacro-settings:conf.output.dir=src/test/resources",
   scalacOptions += "-language:_"
 )
 
