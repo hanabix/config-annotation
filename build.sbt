@@ -62,3 +62,5 @@ lazy val pomXml = {
 lazy val releaseSettings = sbtrelease.ReleasePlugin.releaseSettings ++ Seq(
   sbtrelease.ReleasePlugin.ReleaseKeys.publishArtifactsAction := PgpKeys.publishSigned.value
 )
+
+// sbt release sonatypeRelease

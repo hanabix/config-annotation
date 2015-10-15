@@ -1,0 +1,2 @@
+- Config val name support dot and minus by @eagoo ;
+
