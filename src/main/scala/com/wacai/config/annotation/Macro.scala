@@ -89,8 +89,10 @@ class Macro(val c: whitebox.Context) {
       c.abort(vd.pos, "var should be val")
 
     case ValDef(mods, name, tpt, Block((cd: ClassDef) :: Nil, expr)) =>
-      node(level)(s"$name") {
-        ValDef(mods, name, tpt, Block(generate(cd, s"$owner.$name", level) :: Nil, expr))
+      val owner4dot = owner.replaceAll("\\$u002E","\\.")
+      val name4dot = name.toString.replaceAll("\\$u002E","\\.")
+      node(level)(s"$name4dot") {
+        ValDef(mods, name, tpt, Block(generate(cd, s"$owner4dot.$name4dot", level) :: Nil, expr))
       }
 
     case ValDef(mods, name, tpt, rhs) =>
@@ -98,8 +100,10 @@ class Macro(val c: whitebox.Context) {
         val e = c.eval(c.Expr[Any](Block(q"import scala.concurrent.duration._" :: Nil, rhs)))
         val t = c.typecheck(rhs).tpe
 
-        leaf(level)(s"$name = ${value(t, e)}")
-        ValDef(mods, name, tpt, get(t, s"$owner.$name"))
+        val name4tricks = name.toString.replaceAll("\\$minus","\\-").replaceAll("\\$u002E","\\.")
+        val owner4dot = owner.replaceAll("\\$u002E","\\.")
+        leaf(level)(s"$name4tricks = ${value(t, e)}")
+        ValDef(mods, name, tpt, get(t, s"$owner4dot.$name4tricks"))
       } catch {
         case e: IllegalStateException => c.abort(vd.pos, e.getMessage)
         case _: Throwable             => vd

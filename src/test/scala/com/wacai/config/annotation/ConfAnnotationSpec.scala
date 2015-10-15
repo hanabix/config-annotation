@@ -45,6 +45,14 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
     conf.abcd shouldBe Map[String,String]("a" -> "b", "c" -> "d")
   }
 
+  it should "save and load strings with special keys use scala back ticks literal identifier" in {
+    val conf = new backTicksKeys {}
+    conf.`key-with-mid-line` shouldBe "dash"
+    conf.`netty.tcp`.dotkey shouldBe "dot value"
+    conf.`netty.port` shouldBe "port"
+    conf.`netty.tcp`.level3.`level4.key` shouldBe "level4value"
+    conf.`netty.tcp`.`level3.key` shouldBe "level3value"
+  }
 }
 
 @conf trait kafka extends Configurable {
@@ -113,4 +121,16 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
 @conf trait maps {
   val ab = Map[String,String]("a" -> "b")
   val abcd = Map[String,String]("a" -> "b", "c" -> "d")
+}
+
+@conf trait backTicksKeys {
+  val `key-with-mid-line` = "dash"
+  val `netty.tcp` = new {
+    val dotkey = "dot value"
+    val `level3.key` = "level3value"
+    val level3 = new {
+      val `level4.key` = "level4value"
+    }
+  }
+  val `netty.port` = "port"
 }
