@@ -7,7 +7,7 @@ lazy val root = (project in file("."))
 
 lazy val basicSettings = Seq(
   name := "config-annotation",
-  organization := "com.wacai",
+  organization := "com.github.eagoo",
   scalaVersion := "2.11.5",
   scalacOptions += "-encoding",
   scalacOptions += "utf8",
@@ -38,7 +38,7 @@ lazy val publishSettings = Seq(
   pomExtra := pomXml) ++ xerial.sbt.Sonatype.sonatypeSettings
 
 lazy val pomXml = {
-  <url>https://github.com/wacai/config-annotation</url>
+  <url>https://github.com/eagoo/config-annotation</url>
     <licenses>
       <license>
         <name>Apache License 2.0</name>
@@ -47,14 +47,14 @@ lazy val pomXml = {
       </license>
     </licenses>
     <scm>
-      <url>git@github.com:wacai/config-annotation.git</url>
-      <connection>scm:git:git@github.com:wacai/config-annotation.git</connection>
+      <url>git@github.com:eagoo/config-annotation.git</url>
+      <connection>scm:git:git@github.com:eagoo/config-annotation.git</connection>
     </scm>
     <developers>
       <developer>
-        <id>zhongl</id>
-        <name>zhongl</name>
-        <url>http://github.com/zhongl</url>
+        <id>eagoo</id>
+        <name>eagooqi</name>
+        <url>http://github.com/eagoo</url>
       </developer>
     </developers>
 }
