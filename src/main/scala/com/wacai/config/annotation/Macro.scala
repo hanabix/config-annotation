@@ -199,7 +199,7 @@ object Macro {
   }
 
   def safeString(input: Any) = {
-    def quotationNeeded(s: String) = List(
+    def quotationNeeded(s: String) = s.isEmpty || List(
       '$', '"', '{', '}', '[', ']',
       ':', '=', ',', '+', '#', '`',
       '^', '?', '!', '@', '*', '&', '\\'
