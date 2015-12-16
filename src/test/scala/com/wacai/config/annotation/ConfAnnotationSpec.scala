@@ -23,6 +23,7 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
     conf.url shouldBe "http://localhost:8080/"
     conf.urls shouldBe List("http://localhost:8080/")
     conf.all shouldBe List("$", "\"", "{", "}", "[", "]", ":", "=", ",", "+", "#", "`", "^", "?", "!", "@", "*", "&", "\\\\")
+    conf.empty shouldBe ""
   }
 
   it should "get substitution value" in {
@@ -37,6 +38,7 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
     conf.l shouldBe List(512L, 1024 * 3L)
     conf.t shouldBe List(1 second, 2 minutes)
     conf.s shouldBe List("a", "b")
+    conf.e shouldBe List("", "a", "", "c", "")
   }
 
   it should "know how to save and load Map[String,String]" in {
@@ -107,6 +109,7 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
   val url = "http://localhost:8080/"
   val urls = List("http://localhost:8080/")
   val all = List("$", "\"", "{", "}", "[", "]", ":", "=", ",", "+", "#", "`", "^", "?", "!", "@", "*", "&", "\\\\")
+  val empty = ""
 }
 
 @conf trait list {
@@ -116,6 +119,7 @@ class ConfAnnotationSpec extends FlatSpec with Matchers {
   val l = List(512L, 1024 * 3L)
   val t = List(1 second, 2 minutes)
   val s = List("a", "b")
+  val e = List("", "a", "", "c", "")
 }
 
 @conf trait maps {
