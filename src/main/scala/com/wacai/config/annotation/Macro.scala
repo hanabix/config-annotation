@@ -30,7 +30,7 @@ class Macro(val c: whitebox.Context) {
     val result = annottees.map(_.tree).toList match {
       case (ClassDef(mods, name, a, Template(parents, s, body))) :: Nil if mods.hasFlag(DEFAULTPARAM | TRAIT) =>
 
-        implicit val out = new PrintWriter(new File(outputDir, s"$name.conf"))
+        implicit val out = new PrintWriter(new File(outputDir, s"$name.conf"), "UTF-8")
 
         try {
           node(0)(s"$name") {
