@@ -64,3 +64,4 @@ lazy val releaseSettings = sbtrelease.ReleasePlugin.releaseSettings ++ Seq(
 )
 
 // sbt release sonatypeRelease
+// ~/bin/herald --publish
