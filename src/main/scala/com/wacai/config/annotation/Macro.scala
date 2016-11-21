@@ -34,7 +34,7 @@ class Macro(val c: whitebox.Context) {
 
         try {
           node(0)(s"$name") {
-            val imports = q"import scala.collection.JavaConversions._"
+            val imports = q"import scala.collection.JavaConverters._"
 
             val conf = if (parents exists configurable) {
               q"private val _config = config"
@@ -136,13 +136,13 @@ class Macro(val c: whitebox.Context) {
     case _ if is[String](t)              => q"_config.getString($path)"
     case _ if is[Double](t)              => q"_config.getDouble($path)"
     case _ if is[Duration](t)            => duration(q"_config.getDuration($path, $seconds)")
-    case _ if is[List[Boolean]](t)       => q"_config.getBooleanList($path).toList"
-    case _ if is[List[Int]](t)           => q"_config.getIntList($path).toList"
-    case _ if is[List[Long]](t)          => q"_config.getBytesList($path).toList"
-    case _ if is[List[String]](t)        => q"_config.getStringList($path).toList"
-    case _ if is[List[Double]](t)        => q"_config.getDoubleList($path).toList"
-    case _ if is[List[Duration]](t)      => q"_config.getDurationList($path, $seconds).toList.map {l => ${duration(q"l")} }"
-    case _ if is[Map[String, String]](t) => q"_config.getObject($path).map{case(x,y)=>x.toString -> y.unwrapped.toString}.toMap[String,String]"
+    case _ if is[List[Boolean]](t)       => q"_config.getBooleanList($path).asScala.toList"
+    case _ if is[List[Int]](t)           => q"_config.getIntList($path).asScala.toList"
+    case _ if is[List[Long]](t)          => q"_config.getBytesList($path).asScala.toList"
+    case _ if is[List[String]](t)        => q"_config.getStringList($path).asScala.toList"
+    case _ if is[List[Double]](t)        => q"_config.getDoubleList($path).asScala.toList"
+    case _ if is[List[Duration]](t)      => q"_config.getDurationList($path, $seconds).asScala.toList.map {l => ${duration(q"l")} }"
+    case _ if is[Map[String, String]](t) => q"_config.getObject($path).asScala.map{case(x,y)=>x.toString -> y.unwrapped.toString}.toMap[String,String]"
     case _                               => throw new IllegalStateException(s"Unsupported type: $t")
   }
 
