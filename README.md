@@ -96,18 +96,18 @@ include "kafka.conf"
 Set up your `project/build.properties` to:
 
 ```
-sbt.version = 0.13.5
+sbt.version = 0.13.13
 ```
-
-> sbt 0.13.6+ has NPE problem while compiling
 
 Set up your `build.sbt` with:
 
 ```scala
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
 
-libraryDependencies += "com.wacai" %% "config-annotation" % "0.3.4"
+libraryDependencies += "com.wacai" %% "config-annotation" % "0.3.5"
 ```
+
+> v0.3.6 for scala 2.12.0+
 
 ## Type covenant
 
