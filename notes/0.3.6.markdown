@@ -1,0 +1,2 @@
+- Support scala 2.12 cross build by @lustefaniak ;
+
