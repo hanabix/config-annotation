@@ -1,6 +1,6 @@
 ## Config annotation
 
-[![Build Status](https://travis-ci.org/wacai/config-annotation.png?branch=master)](https://travis-ci.org/wacai/config-annotation)
+[![Build Status](https://travis-ci.org/zhongl/config-annotation.png?branch=master)](https://travis-ci.org/zhongl/config-annotation)
 [![Codacy Badge](https://www.codacy.com/project/badge/b9158949586c439cb05e21333f52798b)](https://www.codacy.com/public/zhonglunfu/config-annotation)
 
 A refactor-friendly configuration lib would help scala programmers to maintain [config][conf] files without any pain,
