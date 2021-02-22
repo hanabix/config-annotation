@@ -4,7 +4,7 @@ lazy val root = (project in file("."))
     libraryDependencies ++= {
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, n)) if n <= 12 =>
-	  List(compilerPlugin("org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full))
+	  List(compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full))
 	case _ => Nil
       }
     },
@@ -21,7 +21,7 @@ lazy val basicSettings = Seq(
   name := "config-annotation",
   organization := "com.wacai",
   scalaVersion := "2.13.4",
-  crossScalaVersions := Seq(scalaVersion.value, "2.12.13", "2.11.12"),
+  crossScalaVersions := Seq(scalaVersion.value, "2.12.10", "2.11.12"),
   scalacOptions += "-encoding",
   scalacOptions += "utf8",
   scalacOptions += "-feature",
