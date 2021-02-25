@@ -93,13 +93,9 @@ include "kafka.conf"
 
 > Caution: only support scala 2.11.0+
 
-Set up your `project/build.properties` to:
-
-```
-sbt.version = 0.13.13
-```
-
 Set up your `build.sbt` with:
+
+### Scala 2.11
 
 ```scala
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
@@ -107,7 +103,20 @@ addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.fu
 libraryDependencies += "com.wacai" %% "config-annotation" % "0.3.5"
 ```
 
-> v0.3.6 for scala 2.12.0+
+### Scala 2.12
+
+```scala
+addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+
+libraryDependencies += "com.wacai" %% "config-annotation" % "0.3.6"
+```
+
+### Scala 2.13
+
+```scala
+libraryDependencies += "com.wacai" %% "config-annotation" % "0.4.0"
+```
+
 
 ## Type covenant
 
