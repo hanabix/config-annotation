@@ -34,7 +34,7 @@ class Macro(val c: whitebox.Context) {
 
         try {
           node(0)(s"$name") {
-            val imports = q"import scala.collection.JavaConverters._"
+            val imports = q"import scala.jdk.CollectionConverters._"
 
             val conf = if (parents exists configurable) {
               q"private val _config = config"
@@ -192,10 +192,10 @@ object Macro {
     case DAYS         => s"${d._1}d"
   }
 
-  implicit class MkString(t: TraversableOnce[_]) {
-    def asArray = t.mkString("[", ", ", "]")
+  implicit class MkString(t: IterableOnce[_]) {
+    def asArray = t.iterator.mkString("[", ", ", "]")
 
-    def asObject = t.mkString("{", ", ", "}")
+    def asObject = t.iterator.mkString("{", ", ", "}")
   }
 
   def safeString(input: Any) = {
