@@ -1,27 +1,25 @@
 lazy val root = (project in file("."))
   .settings(basicSettings: _*)
-  .settings(
-    libraryDependencies ++= {
-      CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, n)) if n <= 12 =>
-	  List(compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full))
-	case _ => Nil
-      }
-    },
-    Compile / scalacOptions ++= {
-      CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, n)) if n <= 12 => Nil
-	case _                       => List("-Ymacro-annotations")
-      }
-    }
-  )
   .settings(dependencySettings: _*)
 
 lazy val basicSettings = Seq(
   name := "config-annotation",
   organization := "com.wacai",
+  homepage := Some(url("https://github.com/zhongl/config-annotation")),
+  licenses := List(
+    "Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")
+  ),
+  developers := List(
+    Developer(
+      "zhongl",
+      "Lunfu Zhong",
+      "zhong.lunfu@gmail.com",
+      url("https://github.com/zhongl")
+    )
+  ),
+
   scalaVersion := "2.13.4",
-  crossScalaVersions := Seq(scalaVersion.value, "2.12.10", "2.11.12"),
+  scalacOptions += "-Ymacro-annotations",
   scalacOptions += "-encoding",
   scalacOptions += "utf8",
   scalacOptions += "-feature",
@@ -36,7 +34,3 @@ lazy val dependencySettings = Seq(
   libraryDependencies += "com.typesafe" % "config" % "1.2.1",
   libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.9" % "test"
 )
-
-
-
-// ~/bin/herald --publish
