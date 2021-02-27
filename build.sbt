@@ -31,6 +31,6 @@ lazy val basicSettings = Seq(
 
 lazy val dependencySettings = Seq(
   libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-  libraryDependencies += "com.typesafe" % "config" % "1.2.1",
+  libraryDependencies += "com.typesafe" % "config" % "1.4.1",
   libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.9" % "test"
 )
