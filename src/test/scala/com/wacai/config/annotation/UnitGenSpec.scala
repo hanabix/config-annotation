@@ -1,9 +1,10 @@
 package com.wacai.config.annotation
 
-import org.scalatest.{Matchers, FlatSpec}
 import scala.concurrent.duration._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class UnitGenSpec extends FlatSpec with Matchers {
+class UnitGenSpec extends AnyFlatSpec with Matchers {
   "duration" should "get right unit" in {
     Macro.time(1 nanosecond) shouldBe "1ns"
     Macro.time(1 microsecond) shouldBe "1us"
