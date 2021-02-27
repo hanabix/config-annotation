@@ -3,9 +3,11 @@ package com.wacai.config.annotation
 import com.typesafe.config.ConfigFactory
 import org.scalatest._
 import scala.concurrent.duration._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 
-class ConfAnnotationSpec extends FlatSpec with Matchers {
+class ConfAnnotationSpec extends AnyFlatSpec with Matchers {
   "@conf annotated trait" should "get value" in {
     val conf = new kafka {}
 
