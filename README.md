@@ -1,4 +1,4 @@
-![ci badge](https://github.com/zhongl/config-annotation/workflows/CI/badge.svg) ![release badge](https://github.com/zhongl/config-annotation/workflows/Release/badge.svg) [![Maven Central](https://img.shields.io/maven-central/v/com.wacai/config-annotation_2.13)](https://search.maven.org/artifact/com.wacai/config-annotation_2.13) [![Coverage Status](https://coveralls.io/repos/github/zhongl/config-annotation/badge.svg?branch=master)](https://coveralls.io/github/zhongl/config-annotation?branch=master)
+![ci badge](https://github.com/zhongl/config-annotation/workflows/CI/badge.svg) ![release badge](https://github.com/zhongl/config-annotation/workflows/Release/badge.svg) [![Maven Central](https://img.shields.io/maven-central/v/com.wacai/config-annotation_2.13)](https://search.maven.org/artifact/com.wacai/config-annotation_2.13) [![Coverage Status](https://coveralls.io/repos/github/zhongl/config-annotation/badge.svg)](https://coveralls.io/github/zhongl/config-annotation)
 
 A refactor-friendly configuration lib would help scala programmers to maintain [config][conf] files without any pain,
 by using scala [macro annotation][mcr].
