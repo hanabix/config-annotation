@@ -11,6 +11,10 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: olafurpg/setup-scala@v10
+      - name: branch-names
+        uses: tj-actions/branch-names@v2.2
       - run: sbt coverage +test coverageReport coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          CI_BRANCH: ${{ steps.branch-name.outputs.current_branch }}
+          
