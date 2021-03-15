@@ -12,6 +12,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: olafurpg/setup-scala@v10
       - name: branch-names
+        id: branch-name
         uses: tj-actions/branch-names@v2.2
       - run: sbt coverage +test coverageReport coveralls
         env:
