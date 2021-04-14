@@ -1,0 +1,17 @@
+name: Release
+
+on: 
+  milestone:
+    types: 
+    - closed
+
+jobs:
+  releasing:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Create a release with title of milestone
+      run: gh -R $GITHUB_REPOSITORY release create $REL_TAG -t $REL_TAG -n "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/milestone/$MS_ID?closed=1"
+      env:
+        GITHUB_TOKEN: ${{secrets.REPO_GITHUB_TOKEN}}
+        REL_TAG: ${{github.event.milestone.title}}
+        MS_ID: ${{github.event.milestone.number}}

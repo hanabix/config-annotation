@@ -5,7 +5,7 @@ lazy val root = (project in file("."))
 lazy val basicSettings = Seq(
   name := "config-annotation",
   organization := "com.wacai",
-  homepage := Some(url("https://github.com/zhongl/config-annotation")),
+  homepage := Some(url("https://github.com/hanabix/config-annotation")),
   licenses := List(
     "Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")
   ),
