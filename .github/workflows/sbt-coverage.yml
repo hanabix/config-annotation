@@ -1,13 +1,15 @@
 name: CI
+
 on:
   push:
-    branches: 
-    - master
-    - main
+    branches:
+      - master
+      - main
   pull_request:
+
 jobs:
-  build:
-    runs-on: ubuntu-20.04
+  coverage:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
       - uses: olafurpg/setup-scala@v10
@@ -18,4 +20,3 @@ jobs:
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           CI_BRANCH: ${{ steps.branch-name.outputs.current_branch }}
-          
