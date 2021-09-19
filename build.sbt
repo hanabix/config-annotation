@@ -18,7 +18,7 @@ lazy val basicSettings = Seq(
     )
   ),
 
-  scalaVersion := "2.13.4",
+  scalaVersion := "2.13.6",
   scalacOptions += "-Ymacro-annotations",
   scalacOptions += "-encoding",
   scalacOptions += "utf8",
