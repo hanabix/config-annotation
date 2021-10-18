@@ -1,6 +1,6 @@
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.9.2")
 
-addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.9.0")
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.9.1")
 
 addSbtPlugin("org.scoverage" % "sbt-coveralls" % "1.3.1")
 
