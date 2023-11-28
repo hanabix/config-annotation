@@ -67,7 +67,7 @@ class ConfAnnotationSpec extends AnyFlatSpec with Matchers {
   }
 
   val socket = new {
-    val timeout = 5 seconds
+    val timeout = 5.seconds
     val buffer  = 1024 * 64L
   }
 
@@ -75,7 +75,7 @@ class ConfAnnotationSpec extends AnyFlatSpec with Matchers {
 
   val debug = false
 
-  val delays = 2 seconds
+  val delays = 2.seconds
 
   def config = ConfigFactory.parseString(
     """|
@@ -119,7 +119,7 @@ class ConfAnnotationSpec extends AnyFlatSpec with Matchers {
   val b = List(true, false)
   val d = List(1.1, 2.2)
   val l = List(512L, 1024 * 3L)
-  val t = List(1 second, 2 minutes)
+  val t = List(1.second, 2.minutes)
   val s = List("a", "b")
   val e = List("", "a", "", "c", "")
 }

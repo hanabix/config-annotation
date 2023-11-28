@@ -2,3 +2,7 @@
 target/
 *.iml
 .bsp/
+.metals/
+metals.sbt
+.vscode/
+.bloop/
